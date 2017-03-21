@@ -10,7 +10,6 @@ This repo contains code for running a vanilla [Flutter][flutter] application (iO
   * **content_provider**: The email content provider agent which communicates with the cloud email services.
 * **modules**: Fuchsia application code using Modular APIs.
   * **nav**: Navigation module.
-  * **service**: The old email_service.
   * **session**: The Email Module responsible for managing shared state between modules.
   * **story**: The top-level email "Story".
   * **story**: The primary entry point for the full Email experience.
