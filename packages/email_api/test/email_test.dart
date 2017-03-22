@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:email_api/email_api.dart';
-import 'package:models/email.dart';
+import 'package:email_models/models.dart';
 import 'package:models/user.dart';
 import 'package:test/test.dart';
 
@@ -79,5 +79,5 @@ void main() {
 
       print('');
     });
-  }, skip: 'takes 4s');
+  }, skip: true);
 }

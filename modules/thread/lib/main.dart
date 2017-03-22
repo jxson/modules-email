@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:application.lib.app.dart/app.dart';
@@ -11,12 +10,13 @@ import 'package:apps.modular.services.module/module_controller.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
 import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
 import 'package:apps.mozart.lib.flutter/child_view.dart';
+import 'package:email_session/session.dart';
 import 'package:email_session_client/client.dart';
-import 'package:email_session_store/email_session_store.dart';
+import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 import 'package:lib.fidl.dart/bindings.dart';
-import 'package:widgets/email.dart';
+import 'package:widgets/common.dart';
 
 const String _moduleName = 'email_thread';
 final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
@@ -66,7 +66,7 @@ void _addEmbeddedChildBuilder() {
     dynamic value,
     EmbeddedChildAdder childAdder,
   }) {
-    String encodedChildDoc = null;
+    String encodedChildDoc;
     if (docRoot != null && propKey != null && propKey is String) {
       Map<String, dynamic> childDoc = <String, dynamic>{
         propKey: value,
@@ -78,7 +78,7 @@ void _addEmbeddedChildBuilder() {
     _resolver.resolveModules(contract, encodedChildDoc,
         (List<resolver.ModuleInfo> modules) {
       if (modules.length < 1) {
-        throw new Exception("No modules found to display attachment!");
+        throw new Exception('No modules found to display attachment!');
       }
       String moduleUrl = modules[0].componentId;
 
@@ -93,7 +93,7 @@ void _addEmbeddedChildBuilder() {
       InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
 
       _module.moduleContext.startModule(
-        moduleUrl,  // module name
+        moduleUrl, // module name
         moduleUrl,
         link.ctrl.unbind(),
         null,

@@ -1,0 +1,20 @@
+# Copyright 2017 The Fuchsia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+name: email_session
+description: A package for shared email dart packages
+
+dependencies:
+  email_models:
+    path: ../email_models
+  models:
+    path: ../../../common/packages/models
+  quiver: ^0.24.0
+  flutter_flux:
+    path: ../../../../../third_party/dart-pkg/pub/flutter_flux
+
+dev_dependencies:
+  test: any
+  flutter_test:
+    sdk: flutter

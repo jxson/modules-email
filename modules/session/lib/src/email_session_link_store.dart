@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:email_session_store/email_session_store.dart';
+import 'package:email_models/models.dart';
+import 'package:email_session/session.dart';
 import 'package:flutter_flux/flutter_flux.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
 
 import 'email_session_doc.dart';
@@ -20,7 +20,7 @@ class EmailSessionLinkStore extends Store implements EmailSessionStore {
   LinkWatcherImpl _watcher;
   EmailSessionDoc _doc = new EmailSessionDoc();
   List<Label> _visibleLabels = const <Label>[];
-  List<String> _expandedMessageIds = <String>[];
+  final List<String> _expandedMessageIds = <String>[];
 
   /// Constructs a new Store to read the email session from the link
   EmailSessionLinkStore(Link link) {
@@ -37,6 +37,7 @@ class EmailSessionLinkStore extends Store implements EmailSessionStore {
   void _onUpdate(dynamic json) {
     _log('Received _onUpdate');
     if (json is! Map) {
+      _log('null update :(');
       return null;
     }
     assert((json[EmailSessionDoc.docroot] is Map));

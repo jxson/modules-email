@@ -7,20 +7,19 @@
 This repo contains code for running a vanilla [Flutter][flutter] application (iOS & Android) and a [Fuchsia][fuchsia] specific set of [modules][modular].
 
 * **agents**: Fuchsia agents (background services) using Modular APIs.
-  * **content_provider**: The email content provider agent which communicates with the cloud email services.
+    * **content_provider**: The email content provider agent which communicates with the cloud email services.
 * **modules**: Fuchsia application code using Modular APIs.
-  * **nav**: Navigation module.
-  * **session**: The Email Module responsible for managing shared state between modules.
-  * **story**: The top-level email "Story".
-  * **story**: The primary entry point for the full Email experience.
-  * **thread_list**: The list of Threads.
-  * **thread**: A single Email Thread.
+    * **nav**: Navigation module.
+    * **session**: The Email Module responsible for managing UI state between modules.
+    * **story**: The top-level email "Story" and primary entry point for the full Email experience.
+    * **thread_list**: The list of Threads.
+    * **thread**: A single Email Thread.
 * **packages**: Common Dart packages used by email agents / modules.
 * **services**: [FIDL][fidl] service definitions.
 
-# Development
+# Setup
 
-## Setup
+## Checkout
 
 This repo is already part of the default jiri manifest.
 
@@ -30,7 +29,35 @@ It is recommended you set up the [Fuchsia environment helpers][fuchsia-env] in `
 
     source scripts/env.sh
 
-## Workflow
+## Device Setup
+
+The series of modules that compose Email share data through [Links][link]. Links allow the shared state between Modules to be persisted between between device reboots and across devices.
+
+In order to enable the desired behavior some configuration is required for the device that the Email modules will be running on. The best way to set up persistent device storage is to use the Fuchsia installer.
+
+1. [Setup an Acer][setup-acer].
+* Ensure you can netboot.
+    * `cd $FUCHSIA_DIR # Or fgo`
+    * `fset x86-64 --modules default`
+    * `fbuild`
+    * `fboot`
+* [Setup the Fuchsia Installer][install-fuchsia], this will setup data partitions on the device.
+* Ensure that data persists between device reboots, in the Acer's terminal:
+    * `touch /data/foobar`
+    * `dm reboot`
+    * Wait for the device to reboot.
+    * `ls /data`
+    * If everything went well you will see `/data/foobar`!
+    * See the [MinFS document][minfs] to learn more about the filesystem.
+* [Enable Ledger's Cloud Sync][ledger-config]. **NOTE:** Ledger data syncing is not secure, only login with test accounts.
+
+[ledger-config]: https://fuchsia.googlesource.com/ledger/+/HEAD/docs/user_guide.md
+[minfs]: https://fuchsia.googlesource.com/magenta/+/master/docs/minfs.md
+[setup-acer]: https://fuchsia.googlesource.com/magenta/+/HEAD/docs/targets/acer12.md
+[install-fuchsia]: https://fuchsia.googlesource.com/install-fuchsia/+/master/README.md#Fuchsia-Installer
+[link]: https://fuchsia.googlesource.com/modular/+/master/services/story/link.fidl
+
+# Workflow
 
 There are Makefile tasks setup to help simplify common development tasks. Use `make help` to see what they are.
 

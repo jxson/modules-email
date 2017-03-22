@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_models/models.dart';
 import 'package:flutter_flux/flutter_flux.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
-
-export 'package:flutter_flux/flutter_flux.dart';
 
 /// Represents an active view session into an Email repository
 abstract class EmailSessionStore implements Store {

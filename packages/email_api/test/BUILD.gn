@@ -8,7 +8,8 @@ dart_test("test") {
   source_dir = "."
 
   deps = [
-    "//apps/email/packages/email_api",
+    "//apps/modules/email/packages/email_api",
+    "//apps/modules/email/packages/email_models",
     "//lib/flutter/packages/flutter_test",
     "//third_party/dart-pkg/pub/test",
   ]

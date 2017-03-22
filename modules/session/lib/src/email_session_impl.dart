@@ -13,8 +13,8 @@ import 'package:apps.modular.services.story/link.fidl.dart';
 import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
     as ecp;
 import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
+import 'package:email_models/models.dart';
 import 'package:lib.fidl.dart/bindings.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
 
 import 'email_session_doc.dart';
@@ -39,10 +39,10 @@ class EmailSessionImpl extends es.EmailSession {
   final ComponentContextProxy _componentContext;
 
   // TODO(youngseokyoon): add all the necessary email service interfaces.
-  ecp.EmailContentProviderProxy _emailProvider =
+  final ecp.EmailContentProviderProxy _emailProvider =
       new ecp.EmailContentProviderProxy();
-  AgentControllerProxy _emailAgentController = new AgentControllerProxy();
-  MessageQueueProxy _notificationQueue = new MessageQueueProxy();
+  final AgentControllerProxy _emailAgentController = new AgentControllerProxy();
+  final MessageQueueProxy _notificationQueue = new MessageQueueProxy();
 
   /// Constructor, takes active link
   EmailSessionImpl(
@@ -58,6 +58,8 @@ class EmailSessionImpl extends es.EmailSession {
   /// Connects to necessary email services, and fetches the initial data.
   void initialize() {
     _log('initialize called');
+
+    // _doc.readFromLink should be extracted out
     _link.get(null, _doc.readFromLink);
 
     /// Connect to the EmailContentProvider agent and get the
