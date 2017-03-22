@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:application.lib.app.dart/app.dart';
+import 'package:apps.maxwell.services.resolver/resolver.fidl.dart' as resolver;
 import 'package:apps.modular.services.module/module_controller.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
 import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
@@ -20,6 +21,7 @@ import 'package:widgets/email.dart';
 const String _moduleName = 'email_thread';
 final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
 EmailSessionModule _module;
+resolver.ResolverProxy _resolver;
 
 void _log(String msg) {
   print('[$_moduleName] $msg');
@@ -27,6 +29,8 @@ void _log(String msg) {
 
 void _created(EmailSessionModule module) {
   _module = module;
+  _resolver = new resolver.ResolverProxy();
+  connectToService(_context.environmentServices, _resolver.ctrl);
 }
 
 void _initialize(es.EmailSession service, EmailSessionLinkStore store) {
@@ -57,54 +61,57 @@ void _addEmbeddedChildBuilder() {
   kEmbeddedChildProvider.setGeneralEmbeddedChildBuilder(({
     String docRoot,
     String type,
-    String moduleUrl,
     String propKey,
+    String contract,
     dynamic value,
+    EmbeddedChildAdder childAdder,
   }) {
-    // Initialize the sub-module.
-
-    // Create a new link, add necessary data to it, and create a duplicate of
-    // it to be passed to the sub-module.
-    LinkProxy link = new LinkProxy();
-    _module.moduleContext.createLink(type, link.ctrl.request());
-
+    String encodedChildDoc = null;
     if (docRoot != null && propKey != null && propKey is String) {
       Map<String, dynamic> childDoc = <String, dynamic>{
         propKey: value,
         '@type': type
       };
-      link.set(<String>[docRoot], JSON.encode(childDoc));
+      encodedChildDoc = JSON.encode(childDoc);
     }
 
-    ModuleControllerProxy moduleController = new ModuleControllerProxy();
-    InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
+    _resolver.resolveModules(contract, encodedChildDoc,
+        (List<resolver.ModuleInfo> modules) {
+      if (modules.length < 1) {
+        throw new Exception("No modules found to display attachment!");
+      }
+      String moduleUrl = modules[0].componentId;
 
-    _module.moduleContext.startModule(
-      moduleUrl,
-      link.ctrl.unbind(),
-      null,
-      null,
-      moduleController.ctrl.request(),
-      viewOwnerPair.passRequest(),
-    );
+      // Create a new link, add necessary data to it, and create a duplicate of
+      // it to be passed to the sub-module.
+      LinkProxy link = new LinkProxy();
+      _module.moduleContext.createLink(type, link.ctrl.request());
+      if (encodedChildDoc != null) {
+        link.set(<String>[docRoot], encodedChildDoc);
+      }
+      ModuleControllerProxy moduleController = new ModuleControllerProxy();
+      InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
 
-    InterfaceHandle<ViewOwner> viewOwner = viewOwnerPair.passHandle();
-    ChildViewConnection conn = new ChildViewConnection(viewOwner);
+      _module.moduleContext.startModule(
+        moduleUrl,
+        link.ctrl.unbind(),
+        null,
+        null,
+        moduleController.ctrl.request(),
+        viewOwnerPair.passRequest(),
+      );
 
-    return new EmbeddedChild(
-      widgetBuilder: (_) => new ChildView(connection: conn),
-      disposer: () {
-        moduleController.stop(() {
+      InterfaceHandle<ViewOwner> viewOwner = viewOwnerPair.passHandle();
+      ChildViewConnection conn = new ChildViewConnection(viewOwner);
+
+      childAdder(new EmbeddedChild(
+        widgetBuilder: (_) => new ChildView(connection: conn),
+        disposer: () {
           viewOwner.close();
-          // NOTE(youngseokyoon): Not sure if it is safe to close the module
-          // controller within a callback passed to module controller, so do
-          // it in the next idle cycle.
-          scheduleMicrotask(() {
-            moduleController.ctrl.close();
-          });
-        });
-      },
-      additionalData: moduleController,
-    );
+          moduleController.ctrl.close();
+        },
+        additionalData: moduleController,
+      ));
+    });
   });
 }
