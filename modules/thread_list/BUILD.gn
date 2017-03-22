@@ -14,7 +14,6 @@ flutter_app("thread_list") {
     "//apps/modular/services/story:story_dart",
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/widgets",
-    "//apps/modules/email/packages/email_session_store",
     "//apps/modules/email/modules/session:client",
     "//apps/modules/email/services:services_dart",
     "//apps/mozart/lib/flutter",

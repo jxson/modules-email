@@ -12,12 +12,15 @@ import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.component/message_queue.fidl.dart';
 import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
     as ecp;
+import 'package:email/models.dart';
 import 'package:email_api/email_api.dart';
 import 'package:lib.fidl.dart/bindings.dart' as bindings;
-import 'package:models/email.dart';
 import 'package:models/user.dart';
 
 import 'api.dart';
+
+/// Period at which we check for new email.
+const int kRefreshPeriodSecs = 10;
 
 void _log(String msg) {
   print('[email_content_provider] $msg');
@@ -51,13 +54,13 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   // for setting and getting state. If any callers try to await for this state
   // before it is ready, they will continue to await until it is ready. After
   // that unchanged state can be awaited repeatedly and it is fine.
-  Completer<ecp.User> _user = new Completer<ecp.User>();
-  Completer<List<ecp.Label>> _labels = new Completer<List<ecp.Label>>();
+  final Completer<ecp.User> _user = new Completer<ecp.User>();
+  final Completer<List<ecp.Label>> _labels = new Completer<List<ecp.Label>>();
   // label id -> list of threads
-  Map<String, Completer<List<Thread>>> _labelToThreads =
+  final Map<String, Completer<List<Thread>>> _labelToThreads =
       new Map<String, Completer<List<Thread>>>();
 
-  Map<String, NotificationSubscriber> _notificationSubscribers =
+  final Map<String, NotificationSubscriber> _notificationSubscribers =
       new Map<String, NotificationSubscriber>();
 
   /// Constructor.
@@ -92,8 +95,8 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
       /// load the labels; served by labels()
       _labels.complete(labels.map((Label label) {
-      String payload = JSON.encode(label);
-      return new ecp.Label.init(label.id, payload);
+        String payload = JSON.encode(label);
+        return new ecp.Label.init(label.id, payload);
       }).toList());
     } catch (e) {
       _log('Email API threw an exception. Auth tokens might be missing.');

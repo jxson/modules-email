@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email/fixtures.dart';
+import 'package:email/models.dart';
 import 'package:flutter_flux/flutter_flux.dart';
-import 'package:models/email.dart';
-import 'package:models/fixtures.dart';
 import 'package:models/user.dart';
 
-import 'email_session_store.dart';
-
-export 'email_session_store.dart';
+import 'store.dart';
 
 /// A mock implemenation of EmailSession
 class EmailSessionStoreMock extends Store implements EmailSessionStore {
@@ -25,7 +23,7 @@ class EmailSessionStoreMock extends Store implements EmailSessionStore {
 
   /// Default constructor, which initializes to mock content.
   EmailSessionStoreMock() {
-    ModelFixtures fixtures = new ModelFixtures();
+    EmailFixtures fixtures = new EmailFixtures();
 
     _user = fixtures.user();
     _visibleLabels = fixtures.labels();

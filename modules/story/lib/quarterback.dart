@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:widgets/email.dart';
 
 /// A screen demonstrating what the email quarterback module should look like.
 ///

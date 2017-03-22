@@ -6,8 +6,8 @@ name: email_story
 description: A new flutter project.
 
 dependencies:
-  email_session_store:
-    path: ../../packages/email_session_store
+  email:
+    path: ../../packages/email
   flutter:
     sdk: flutter
   widgets:

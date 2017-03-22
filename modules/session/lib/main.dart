@@ -56,6 +56,7 @@ class ModuleImpl extends Module {
     _emailModuleContextProxy.ctrl.bind(moduleContextHandle);
     emailSessionLinkProxy.ctrl.bind(linkHandle);
 
+    // TODO(jasoncampbell): Start here.
     // TODO(alangardner): Temporarily start with mock data
     EmailSessionDoc sessionState = new EmailSessionDoc.withMockData();
 

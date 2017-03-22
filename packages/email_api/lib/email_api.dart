@@ -6,12 +6,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:config/config.dart';
+import 'package:email/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:googleapis/oauth2/v2.dart' as oauth;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart';
 import 'package:meta/meta.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
 import 'package:util/extract_uri.dart';
 

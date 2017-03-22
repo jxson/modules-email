@@ -3,8 +3,17 @@
 # found in the LICENSE file.
 
 import("//apps/dart_content_handler/dart_app.gni")
+import("//flutter/build/flutter_app.gni")
 
-dart_app("content_provider") {
+
+# Temporarily using the `flutter_app` template to workaround transitive
+# Flutter dependencies. Once these are resolved switch back to using the
+# `dart_app` template here and modify //packages/gn/email so that the
+# email_content_provider's binary is  "content_provider.dartx" instead of
+# "content_provider.flx"
+#
+# See: #TO-226
+flutter_app("content_provider") {
   main_dart = "lib/main.dart"
 
   deps = [
@@ -12,8 +21,12 @@ dart_app("content_provider") {
     "//application/services:services_dart",
     "//apps/maxwell/services/suggestion:suggestion_dart",
     "//apps/modular/services/agent:agent_dart",
+    "//apps/modules/common/packages/models",
     "//apps/modules/email/packages/email_api",
+    "//apps/modules/email/packages/email",
     "//apps/modules/email/services:services_dart",
     "//lib/fidl/dart",
   ]
+
+  analysis_options = "//apps/modules/common/.analysis_options"
 }

@@ -1,0 +1,26 @@
+# Copyright 2017 The Fuchsia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+name: email
+description: A package for shared email dart packages
+
+dependencies:
+  flutter:
+    sdk: flutter
+  widgets_meta:
+    path: ../../../common/packages/widgets_meta
+  widgets:
+    path: ../../../common/packages/widgets
+  fixtures:
+    path: ../../../common/packages/fixtures
+  models:
+    path: ../../../common/packages/models
+  quiver: ^0.24.0
+  flutter_flux:
+    path: ../../../../../third_party/dart-pkg/pub/flutter_flux
+
+dev_dependencies:
+  test: any
+  flutter_test:
+    sdk: flutter

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import 'package:flutter_flux/flutter_flux.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
+
+import '../../models.dart';
 
 export 'package:flutter_flux/flutter_flux.dart';
 

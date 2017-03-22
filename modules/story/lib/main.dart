@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:email_session_store/email_session_store_mock.dart';
+import 'package:email/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 

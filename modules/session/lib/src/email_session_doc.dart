@@ -5,8 +5,8 @@
 import 'dart:convert';
 
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:models/email.dart';
-import 'package:models/fixtures.dart';
+import 'package:email/fixtures.dart';
+import 'package:email/models.dart';
 import 'package:models/user.dart';
 
 // ignore: UNUSED_ELEMENT
@@ -66,8 +66,9 @@ class EmailSessionDoc {
   EmailSessionDoc();
 
   /// Fill with mock data
+  /// TODO(jasoncampbell): Move mock data usage into the Flutter mains.
   EmailSessionDoc.withMockData() {
-    ModelFixtures fixtures = new ModelFixtures();
+    EmailFixtures fixtures = new EmailFixtures();
     user = fixtures.me();
     visibleLabels = fixtures.labels();
     visibleThreads = fixtures.threads();

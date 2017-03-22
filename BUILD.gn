@@ -9,3 +9,14 @@ group("email") {
     "//apps/modules/email/services",
   ]
 }
+
+group("test") {
+  testonly = true
+
+  deps = [
+    "//apps/modules/email/packages/email/test",
+    "//apps/modules/common/packages/models/test",
+    "//apps/modules/common/packages/util/test",
+    "//apps/modules/common/packages/widgets/test",
+  ]
+}

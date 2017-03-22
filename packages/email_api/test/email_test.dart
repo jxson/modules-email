@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email/models.dart';
 import 'package:email_api/email_api.dart';
-import 'package:models/email.dart';
 import 'package:models/user.dart';
 import 'package:test/test.dart';
 

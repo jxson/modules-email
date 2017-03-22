@@ -18,7 +18,7 @@ dart_package("client") {
     "//apps/modular/services/story:story_dart",
     "//apps/modules/common/packages/fixtures",
     "//apps/modules/common/packages/models",
-    "//apps/modules/email/packages/email_session_store",
+    "//apps/modules/email/packages/email",
     "//apps/modules/email/services:services_dart",
     "//apps/mozart/lib/flutter",
     "//apps/mozart/services/views:views_dart",
@@ -38,6 +38,7 @@ flutter_app("session") {
   main_dart = "lib/main.dart"
 
   deps = [
+    "//apps/modules/email/packages/email",
     "//apps/modules/email/modules/session:client",
   ]
 

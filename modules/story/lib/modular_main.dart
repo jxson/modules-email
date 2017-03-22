@@ -145,9 +145,12 @@ class ModuleImpl extends Module {
     InterfacePair<ModuleController> moduleControllerPair =
         new InterfacePair<ModuleController>();
 
+    // module name is the module url
+    String name = url;
+
     _log('Starting sub-module: $url');
     moduleContext.startModule(
-      url,  // module name is the module url
+      name,
       url,
       duplicateLink(),
       outgoingServices,
