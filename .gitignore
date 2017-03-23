@@ -2,3 +2,4 @@
 # Build directory added by flutter run.
 modules/story/build
 pubspec.lock
+.analysis_options
