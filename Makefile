@@ -15,3 +15,10 @@ FLUTTER_TARGET := modules/story
 FUCHSIA_TARGET := email_story
 
 include $(common_makefile)
+
+
+################################################################################
+## Project specific build
+.PHONY: build-override
+build-override:
+	@true
