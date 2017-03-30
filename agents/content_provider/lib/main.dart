@@ -47,7 +47,9 @@ class EmailContentProviderAgent extends Agent {
   /// Implements [Agent] interface.
   @override
   Future<Null> initialize(
-      InterfaceHandle<AgentContext> agentContextHandle) async {
+      InterfaceHandle<AgentContext> agentContextHandle,
+      void callback(),
+      ) async {
     _log('Initialize called');
 
     // Get the ComponentContext
@@ -69,6 +71,7 @@ class EmailContentProviderAgent extends Agent {
     }, ecp.EmailContentProvider.serviceName);
 
     await _emailContentProviderImpl.init();
+    callback();
   }
 
   /// Implements [Agent] interface.
