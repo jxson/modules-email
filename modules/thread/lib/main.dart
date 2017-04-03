@@ -93,6 +93,7 @@ void _addEmbeddedChildBuilder() {
       InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
 
       _module.moduleContext.startModule(
+        moduleUrl,  // module name
         moduleUrl,
         link.ctrl.unbind(),
         null,
