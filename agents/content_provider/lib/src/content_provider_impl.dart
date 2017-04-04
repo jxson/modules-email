@@ -23,9 +23,6 @@ void _log(String msg) {
   print('[email_content_provider] $msg');
 }
 
-/// Period at which we check for new email.
-final Duration kRefreshPeriodSecs = new Duration(minutes: 1);
-
 /// This datastructure is used to keep a record of subscribers that want email
 /// updates. This is constructed when
 /// [EmailContentProviderImpl.registerForUpdates] is called.
@@ -63,8 +60,6 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   Map<String, NotificationSubscriber> _notificationSubscribers =
       new Map<String, NotificationSubscriber>();
 
-  Timer _refreshTimer;
-
   /// Constructor.
   EmailContentProviderImpl(this._componentContext, this._proposalPublisher);
 
@@ -87,20 +82,22 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   Future<Null> init() async {
     EmailAPI _api = await API.get();
 
-    User me = await _api.me();
-    List<Label> labels = await _api.labels();
+    try {
+      User me = await _api.me();
+      List<Label> labels = await _api.labels();
 
-    /// load the user information; served by me()
-    String payload = JSON.encode(me);
-    _user.complete(new ecp.User.init(me.id, payload));
+      /// load the user information; served by me()
+      String payload = JSON.encode(me);
+      _user.complete(new ecp.User.init(me.id, payload));
 
-    /// load the labels; served by labels()
-    _labels.complete(labels.map((Label label) {
+      /// load the labels; served by labels()
+      _labels.complete(labels.map((Label label) {
       String payload = JSON.encode(label);
       return new ecp.Label.init(label.id, payload);
-    }).toList());
-
-    _refreshTimer = new Timer(kRefreshPeriodSecs, this.onRefresh);
+      }).toList());
+    } catch (e) {
+      _log('Email API threw an exception. Auth tokens might be missing.');
+    }
   }
 
   /// Called every [kRefreshPeriodSecs] to refresh labels. It will check for new
@@ -137,7 +134,6 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
         });
       }
     }
-    _refreshTimer = new Timer(kRefreshPeriodSecs, this.onRefresh);
   }
 
   Future<Null> _fetchThreads(String labelId, int max) async {

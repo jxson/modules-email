@@ -23,6 +23,9 @@ void _log(String msg) {
   print('[email_agent] $msg');
 }
 
+/// Period at which we check for new email.
+const int _kRefreshPeriodSecs = 10;
+
 /// An implementation of the [Agent] interface.
 class EmailContentProviderAgent extends Agent {
   // TOOD(vardhan): Need a proper BindingSet that self-removes dead interfaces.
@@ -70,6 +73,12 @@ class EmailContentProviderAgent extends Agent {
       _emailContentProviderImpl.addBinding(request);
     }, ecp.EmailContentProvider.serviceName);
 
+    final TaskInfo taskInfo = new TaskInfo();
+    taskInfo.taskId = "refresh_timer";
+    taskInfo.triggerCondition = new TriggerCondition();
+    taskInfo.triggerCondition.alarmInSeconds = _kRefreshPeriodSecs;
+    agentContext.scheduleTask(taskInfo);
+
     await _emailContentProviderImpl.init();
     callback();
   }
@@ -84,7 +93,10 @@ class EmailContentProviderAgent extends Agent {
 
   /// Implements [Agent] interface.
   @override
-  void runTask(String taskId, void callback()) {}
+  Future<Null> runTask(String taskId, void callback()) async {
+    await _emailContentProviderImpl.onRefresh();
+    callback();
+  }
 
   /// Implements [Agent] interface.
   @override
