@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:fixtures/fixtures.dart';
+import 'package:models/fixtures.dart';
 import 'package:models/user.dart';
 
 import 'models.dart';
 
 /// [Fixtures] extension class for FX models.
-class EmailFixtures extends Fixtures {
+class EmailFixtures extends ModelFixtures {
   /// Me.
   User me() {
     return user(
