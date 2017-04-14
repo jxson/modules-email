@@ -8,8 +8,9 @@ import 'package:meta/meta.dart';
 
 import 'type_defs.dart';
 
+/// [IconData] for [Icon] that represents a Label ID.
 // TODO(dayang): Fill this out based on Gmail Label names & icons
-Map<String, IconData> _folderIdToIcon = <String, IconData>{
+const Map<String, IconData> _kIcons = const <String, IconData>{
   'STARRED': Icons.star,
   'INBOX': Icons.inbox,
   'TRASH': Icons.delete,
@@ -19,43 +20,23 @@ Map<String, IconData> _folderIdToIcon = <String, IconData>{
 /// List item that represents a single Gmail style [Label]
 class LabelListItem extends StatelessWidget {
   /// Given [Label] that this [LabelListItem] is associated with
-  Label label;
-
-  /// [IconData] for [Icon] that represents the given folder
-  ///
-  /// For Labels of type 'system' (from Gmail), the following priority
-  /// determines the Icon:
-  ///   1. Icon specified in constructor parameter
-  ///   2. Icon based on LabelIdToIcon mapping
-  ///   3. Default folder icon (Icons.folder)
-  ///
-  /// For folders that aren't of type system, the following priority determines
-  /// the Icon:
-  ///   1. Icon specified in constructor parameter
-  ///   2. Default folder icon (Icons.folder)
-  IconData icon;
+  final Label label;
 
   /// Callback if folder is selected
-  LabelActionCallback onSelect;
+  final LabelCallback onSelect;
 
   /// True if the folder is 'selected', this will highlight the item with a
   /// grey background.
-  bool selected;
+  final bool selected;
 
   /// Creates new LabelListItem
   LabelListItem({
     Key key,
     @required this.label,
-    this.icon,
     this.onSelect,
     this.selected: false,
   })
       : super(key: key) {
-    if (label.type == 'system') {
-      icon ??= _folderIdToIcon[label.id] ?? Icons.folder;
-    } else {
-      icon ??= Icons.folder;
-    }
     assert(label != null);
   }
 
@@ -63,6 +44,23 @@ class LabelListItem extends StatelessWidget {
     if (onSelect != null) {
       onSelect(label);
     }
+  }
+
+  /// The Icon for the [label].
+  Widget buildIcon(BuildContext context) {
+    IconData iconData;
+
+    if (label.type == 'system') {
+      iconData = _kIcons[label.id] ?? Icons.folder;
+    } else {
+      iconData = Icons.folder;
+    }
+
+    return new Icon(
+      iconData,
+      color: Colors.grey[600],
+      size: 20.0,
+    );
   }
 
   @override
@@ -73,11 +71,7 @@ class LabelListItem extends StatelessWidget {
         enabled: true,
         onTap: _handleSelect,
         isThreeLine: false,
-        leading: new Icon(
-          icon,
-          color: Colors.grey[600],
-          size: 20.0,
-        ),
+        leading: buildIcon(context),
         title: new Text(label.name),
         trailing: label.unread > 0
             ? new Text(

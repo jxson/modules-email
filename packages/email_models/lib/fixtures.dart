@@ -33,33 +33,26 @@ class EmailFixtures extends ModelFixtures {
   }
 
   /// Create a [List] of [Label] objects for use in testing and demos.
-  List<Label> labels() {
-    return <Label>[
-      new Label(
-        id: 'INBOX',
-        name: 'Inbox',
-        unread: _inbox().length,
-        type: 'system',
-      ),
-      new Label(
-        id: 'STARRED',
-        name: 'Starred',
-        unread: _starred().length,
-        type: 'system',
-      ),
-      new Label(
-        id: 'DRAFT',
-        name: 'Drafts',
-        unread: _drafts().length,
-        type: 'system',
-      ),
-      new Label(
-        id: 'TRASH',
-        name: 'Trash',
-        unread: _trash().length,
-        type: 'system',
-      ),
+  Map<String, Label> labels() {
+    Map<String, Label> map = <String, Label>{};
+    List<String> names = <String>[
+      'Inbox',
+      'Starred',
+      'Drafts',
+      'Trash',
     ];
+
+    names.forEach((String name) {
+      String id = name.toUpperCase();
+
+      map[id] = label(
+        id: id,
+        name: name,
+        type: 'system',
+      );
+    });
+
+    return map;
   }
 
   /// Generate [Attachment] objects.
@@ -95,8 +88,9 @@ class EmailFixtures extends ModelFixtures {
     bool isRead,
     List<User> to,
     List<User> cc,
-    DateTime timestamp,
+    int timestamp,
     List<Attachment> attachments,
+    bool expanded: false,
   }) {
     sender ??= user();
 
@@ -111,21 +105,28 @@ class EmailFixtures extends ModelFixtures {
         displayName: sender.name,
       ),
       senderProfileUrl: null,
-      recipientList: to?.map((User recipient) => recipient.mailbox)?.toList(),
-      ccList: cc?.map((User recipient) => recipient.mailbox)?.toList(),
-      subject: subject ?? lorem.createSentence(),
+      recipientList: to?.map(Mailbox.createFromUser)?.toList(),
+      ccList: cc?.map(Mailbox.createFromUser)?.toList(),
+      subject: subject,
       text: text ?? lorem.createText(),
-      timestamp: timestamp ?? new DateTime.now(),
+      timestamp: timestamp ?? this.timestamp(),
       isRead: isRead ?? false,
       attachments: attachments,
+      expanded: expanded,
     );
   }
 
   /// Generate a [Thread].
-  Thread thread([List<Message> messages]) {
-    messages ??= new List<Message>.generate(
+  Thread thread([List<Message> list]) {
+    list ??= new List<Message>.generate(
       rng.nextInt(3) + 1,
       (int _) => message(),
+    );
+
+    Map<String, Message> messages = new Map<String, Message>.fromIterable(
+      list,
+      key: (Message m) => m.id,
+      value: (Message m) => m,
     );
 
     return new Thread(
@@ -137,27 +138,30 @@ class EmailFixtures extends ModelFixtures {
   }
 
   /// TODO(jasoncampbell): document this.
-  List<Thread> threads({
+  Map<String, Thread> threads({
     String labelId: 'INBOX',
   }) {
-    List<Thread> results;
+    List<Thread> threads;
+    Map<String, Thread> results = <String, Thread>{};
 
     switch (labelId) {
       case 'INBOX':
-        results = _inbox();
+        threads = _inbox();
         break;
       case 'STARRED':
-        results = _starred();
+        threads = _starred();
         break;
       case 'DRAFTS':
-        results = _drafts();
+        threads = _drafts();
         break;
       case 'TRASH':
-        results = _trash();
+        threads = _trash();
         break;
       default:
-        results = <Thread>[];
+        threads = <Thread>[];
     }
+
+    threads.forEach((Thread thread) => results[thread.id] = thread);
 
     return results;
   }
@@ -170,7 +174,8 @@ class EmailFixtures extends ModelFixtures {
         message(
           sender: dad,
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-29T18:14-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T18:14-0600').millisecondsSinceEpoch,
           subject: 'Don\'t forget to call your mom.',
           text: 'It\'s her birthday too. You know how she gets. ;-)',
           isRead: true,
@@ -190,7 +195,8 @@ class EmailFixtures extends ModelFixtures {
         message(
           sender: user(name: 'Traveling Salesman'),
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-22T06:22-0600'),
+          timestamp:
+              DateTime.parse('2016-11-22T06:22-0600').millisecondsSinceEpoch,
           subject: '90% off for a limited time!!!',
           text: '''90% off for a limited time!
 
@@ -204,7 +210,8 @@ If you want to change your life, click here and get 90% stuff you really need.
         message(
           sender: user(name: 'Gym'),
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-21T05:02-0600'),
+          timestamp:
+              DateTime.parse('2016-11-21T05:02-0600').millisecondsSinceEpoch,
           subject: 'New Years Resolution Time',
           text: '''
 
@@ -234,7 +241,8 @@ Sign up now!
         message(
             sender: store,
             to: <User>[me],
-            timestamp: DateTime.parse('2016-11-29T18:14-0600'),
+            timestamp:
+                DateTime.parse('2016-11-29T18:14-0600').millisecondsSinceEpoch,
             subject: 'Your order from Bedford Mobile',
             text: 'http://www.aplusmobile.com/yourorder',
             isRead: false,
@@ -246,7 +254,8 @@ Sign up now!
         message(
           sender: store,
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-29T19:14-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T19:14-0600').millisecondsSinceEpoch,
           subject: 'Your order from Bedford Mobile Outlet is on its way! ',
           text: '''Hello Aparna Nielsen,
 
@@ -272,7 +281,8 @@ Bedford Mobile Outlet
         message(
           sender: me,
           to: <User>[dad],
-          timestamp: DateTime.parse('2016-11-28T22:57:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-28T22:57:00-0600').millisecondsSinceEpoch,
           subject: 'India trip planning',
           text: '''Hey Dad,
 
@@ -286,7 +296,8 @@ Love, Aparna
         message(
           sender: dad,
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-29T01:12:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T01:12:00-0600').millisecondsSinceEpoch,
           subject: 're: India trip planning',
           text: '''Hi pumpkin-
 
@@ -302,7 +313,8 @@ And we're planning to depart BDQ on 5/31 at 5:00pm.
         message(
           sender: me,
           to: <User>[dad],
-          timestamp: DateTime.parse('2016-11-29T03:12:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T03:12:00-0600').millisecondsSinceEpoch,
           subject: 'India trip planning',
           text: '''Ahhh ok. My mistake. :)
 
@@ -314,7 +326,8 @@ Yes, I should be free to work on putting one together after this Thursday!
         message(
           sender: dad,
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-29T16:31:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T16:31:00-0600').millisecondsSinceEpoch,
           subject: 're: India trip planning',
           text:
               '''Great, I'll give you a call once I can dig up all my files. Lots of old itineraries lying around that we never quite got around to.
@@ -327,7 +340,8 @@ By the way, do you have enough suitcases for your stuff? Your mother and I have 
         message(
           sender: me,
           to: <User>[dad],
-          timestamp: DateTime.parse('2016-11-29T17:35:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T17:35:00-0600').millisecondsSinceEpoch,
           subject: 're: India trip planning',
           text:
               '''I'll be getting some new luggage delivered, so I should be ready. Do you have my immunization history available by chance? I think it's over in the top drawer of my old dresser.
@@ -351,7 +365,8 @@ https://www.youtube.com/watch?v=KbtZfzxX44o
         message(
           sender: miguel,
           to: <User>[me],
-          timestamp: DateTime.parse('2016-11-28T23:45:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-28T23:45:00-0600').millisecondsSinceEpoch,
           subject: 'Toe the Line followup',
           text:
               '''Hey, I have a couple thoughts on how we can update the Silver Toe lineup. Bear with me here, these ideas are amazing.
@@ -374,7 +389,8 @@ What do you think?
           sender: me,
           to: <User>[miguel],
           subject: 're: Toe the Line followup',
-          timestamp: DateTime.parse('2016-11-29T15:02:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T15:02:00-0600').millisecondsSinceEpoch,
           text: '''Sounds good. Want to meet up later this afternoon?
 
 
@@ -385,7 +401,8 @@ What do you think?
           sender: miguel,
           to: <User>[me],
           subject: 're: Toe the Line followup',
-          timestamp: DateTime.parse('2016-11-29T17:01:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T17:01:00-0600').millisecondsSinceEpoch,
           text:
               '''Yeah, I'm free for the rest of the afternoon. Want to just stop by my desk when you have a spare moment? It might be better if I can draw it out in person.
               ''',
@@ -396,7 +413,8 @@ What do you think?
           sender: me,
           to: <User>[sophie],
           subject: 'Plans for Miguel’s birthday',
-          timestamp: DateTime.parse('2016-11-29T15:20:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T15:20:00-0600').millisecondsSinceEpoch,
           text: '''Hey Sophie,
 
 
@@ -412,7 +430,8 @@ I was thinking that maybe we could bring in a delicious snack that he might like
           sender: sophie,
           to: <User>[me],
           subject: 're: Plans for Miguel’s birthday',
-          timestamp: DateTime.parse('2016-11-29T15:28:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T15:28:00-0600').millisecondsSinceEpoch,
           text:
               '''I heard that Miguel likes Pavlova! Let's make one for him. I was looking for tutorials online, and just found this one...
 https://www.youtube.com/watch?v=NS4yqgNjl9Y
@@ -430,7 +449,8 @@ https://www.youtube.com/watch?v=NS4yqgNjl9Y
           sender: me,
           to: <User>[sophie],
           subject: 're: Plans for Miguel’s birthday',
-          timestamp: DateTime.parse('2016-11-29T16:54:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T16:54:00-0600').millisecondsSinceEpoch,
           text:
               '''Oh wow, that Pavlova recipe looks a bit complicated. But I might be able to pull something like that off.
 
@@ -450,7 +470,8 @@ I see this chef on that show on TV pretty often. So if it's easy enough for her 
           sender: me,
           to: <User>[danielle],
           subject: 'Concert on Friday?',
-          timestamp: DateTime.parse('2016-11-28T23:56:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-28T23:56:00-0600').millisecondsSinceEpoch,
           text: '''Hey!
 
 
@@ -463,7 +484,8 @@ Interested in seeing Chvrches next month? They have a new album that's supposed 
           sender: danielle,
           to: <User>[me],
           subject: 're: Concert on Friday?',
-          timestamp: DateTime.parse('2016-11-29T14:05:00-0600'),
+          timestamp:
+              DateTime.parse('2016-11-29T14:05:00-0600').millisecondsSinceEpoch,
           text:
               '''Oh, I was just about to ask you about seeing Chvrches! I was listening to their album non-stop, as a matter of fact. I’m going to check to see if I can get a sitter for the kids that weekend. Fingers crossed!
 

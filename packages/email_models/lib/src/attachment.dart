@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:email_models/fixtures.dart';
+import 'package:meta/meta.dart';
 import 'package:widgets_meta/widgets_meta.dart';
 
 /// Some basic attachment types
@@ -13,7 +14,7 @@ enum AttachmentType {
   /// USPS Shipping code
   uspsShipping,
 
-  /// A order recipet for an online purchase
+  /// A order receipt for an online purchase
   orderReceipt,
 }
 
@@ -21,19 +22,19 @@ enum AttachmentType {
 @Generator(EmailFixtures, 'attachment')
 class Attachment {
   /// Type of the attachment
-  AttachmentType type;
+  final AttachmentType type;
 
   /// String representation of the value/data of the attachment
-  String value;
+  final String value;
 
   /// ID for given attachment
   String id;
 
   /// Constructor
   Attachment({
-    this.type,
-    this.value,
-    this.id,
+    @required this.type,
+    @required this.value,
+    @required this.id,
   });
 
   /// Construct a new [Attachment] from JSON.

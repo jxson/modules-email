@@ -19,10 +19,6 @@ import 'src/content_provider_impl.dart';
 final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
 EmailContentProviderAgent _agent;
 
-void _log(String msg) {
-  print('[email_agent] $msg');
-}
-
 /// An implementation of the [Agent] interface.
 class EmailContentProviderAgent extends Agent {
   // TOOD(vardhan): Need a proper BindingSet that self-removes dead interfaces.

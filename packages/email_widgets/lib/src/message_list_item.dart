@@ -6,7 +6,6 @@ import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/widgets.dart';
 import 'package:meta/meta.dart';
-import 'package:models/user.dart';
 
 import 'message_content.dart';
 import 'type_defs.dart';
@@ -16,35 +15,33 @@ const Duration _kExpandAnimationDuration = const Duration(milliseconds: 200);
 /// [MessageListItem] is a [StatelessWidget]
 ///
 /// An item that represents a single email [Message]
-/// Can be expanded to show full message through the [isExpanded] parameter
+///
+/// NOTE: This Widget MUST be a descendant of a [MaterialApp] for the menus to
+/// work.
 class MessageListItem extends StatelessWidget {
   /// Email [Message] that this widget will render
-  Message message;
-
-  /// True if message is fully expanded to show content
-  bool isExpanded;
+  final Message message;
 
   /// Callback if MessageListItem header is tapped
-  MessageActionCallback onHeaderTap;
+  final MessageCallback onHeaderTap;
 
   /// Callback for selecting forward in popup action menu
-  MessageActionCallback onForward;
+  final MessageCallback onForward;
 
   /// Callback for selecting reply all in popup action menu
-  MessageActionCallback onReplyAll;
+  final MessageCallback onReplyAll;
 
   /// Callback for selecting reply in popup action menu
-  MessageActionCallback onReply;
+  final MessageCallback onReply;
 
-  /// Creates new MessageListItem
+  /// [MessageListItem] constructor.
   MessageListItem({
     Key key,
     @required this.message,
     @required this.onForward,
     @required this.onReplyAll,
     @required this.onReply,
-    this.onHeaderTap,
-    this.isExpanded: false,
+    @required this.onHeaderTap,
   })
       : super(key: key) {
     assert(message != null);
@@ -63,7 +60,7 @@ class MessageListItem extends StatelessWidget {
       ),
     );
 
-    if (isExpanded) {
+    if (message.expanded) {
       return new Row(
         children: <Widget>[
           new Expanded(
@@ -77,29 +74,29 @@ class MessageListItem extends StatelessWidget {
               color: Colors.grey[500],
             ),
           ),
-          new PopupMenuButton<MessageActionCallback>(
+          new PopupMenuButton<MessageCallback>(
             child: new Icon(
               Icons.more_vert,
               color: Colors.grey[500],
               size: 20.0,
             ),
             itemBuilder: (BuildContext context) =>
-                <PopupMenuItem<MessageActionCallback>>[
-                  new PopupMenuItem<MessageActionCallback>(
+                <PopupMenuItem<MessageCallback>>[
+                  new PopupMenuItem<MessageCallback>(
                     value: onReply,
                     child: new ListTile(
                       leading: new Icon(Icons.reply),
                       title: new Text('Reply'),
                     ),
                   ),
-                  new PopupMenuItem<MessageActionCallback>(
+                  new PopupMenuItem<MessageCallback>(
                     value: onReplyAll,
                     child: new ListTile(
                       leading: new Icon(Icons.reply_all),
                       title: new Text('Reply All'),
                     ),
                   ),
-                  new PopupMenuItem<MessageActionCallback>(
+                  new PopupMenuItem<MessageCallback>(
                     value: onForward,
                     child: new ListTile(
                       leading: new Icon(Icons.forward),
@@ -107,7 +104,7 @@ class MessageListItem extends StatelessWidget {
                     ),
                   ),
                 ],
-            onSelected: (MessageActionCallback messageCallback) {
+            onSelected: (MessageCallback messageCallback) {
               messageCallback(message);
             },
           ),
@@ -125,14 +122,14 @@ class MessageListItem extends StatelessWidget {
   Widget _buildMessageSubtitle() {
     String subtitleText;
 
-    if (isExpanded) {
+    if (message.expanded) {
       // Create list of both CCed and direct recipients of email
       List<String> allRecipientList = <String>[]
         ..addAll(message.recipientList.map((Mailbox m) => m.displayText))
         ..addAll(message.ccList.map((Mailbox m) => m.displayText));
       subtitleText = 'to ${allRecipientList.join(', ')}';
     } else {
-      subtitleText = message.generateSnippet();
+      subtitleText = message.snippet;
     }
 
     return new Text(
@@ -147,9 +144,7 @@ class MessageListItem extends StatelessWidget {
   }
 
   void _handleHeaderTap() {
-    if (onHeaderTap != null) {
-      onHeaderTap(message);
-    }
+    onHeaderTap(message);
   }
 
   @override
@@ -191,8 +186,9 @@ class MessageListItem extends StatelessWidget {
         firstCurve: new Interval(0.0, 0.6, curve: Curves.fastOutSlowIn),
         secondCurve: new Interval(0.4, 1.0, curve: Curves.fastOutSlowIn),
         sizeCurve: Curves.fastOutSlowIn,
-        crossFadeState:
-            isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+        crossFadeState: message.expanded
+            ? CrossFadeState.showSecond
+            : CrossFadeState.showFirst,
         duration: _kExpandAnimationDuration,
       ),
     ];

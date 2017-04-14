@@ -2,40 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
+import 'package:application.lib.app.dart/app.dart';
+import 'package:flutter/widgets.dart';
+import 'package:lib.widgets/modular.dart';
 
-import 'package:email_session/session.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
+import 'src/modular/module_model.dart';
+import 'src/modular/screen.dart';
 
-import 'quarterback.dart';
+void main() {
+  ModuleWidget<EmailStoryModuleModel> moduleWidget =
+      new ModuleWidget<EmailStoryModuleModel>(
+    applicationContext: new ApplicationContext.fromStartupInfo(),
+    moduleModel: new EmailStoryModuleModel(),
+    child: new EmailStoryScreen(),
+  );
 
-Future<Null> main() async {
-  // HACK(alangardner): Must be called before any flux flutter widgets are setup
-  // This sets up a global variable that is accessible to all of the widgets.
-  EmailSessionStoreMock emailSessionStore = new EmailSessionStoreMock();
-  kEmailSessionStoreToken = new StoreToken(emailSessionStore);
-  runApp(new _MyApp());
-}
+  moduleWidget.advertise();
 
-class _MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting
-        // the app, try changing the primarySwatch below to Colors.green
-        // and press "r" in the console where you ran "flutter run".
-        // We call this a "hot reload". Notice that the counter didn't
-        // reset back to zero -- the application is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: new EmailQuarterbackModule(),
-    );
-  }
+  runApp(moduleWidget);
 }

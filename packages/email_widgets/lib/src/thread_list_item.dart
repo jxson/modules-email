@@ -20,10 +20,10 @@ class ThreadListItem extends StatelessWidget {
   final Thread thread;
 
   /// Callback if item is selected
-  final ThreadActionCallback onSelect;
+  final ThreadCallback onSelect;
 
   /// Callback if item is archived
-  final ThreadActionCallback onArchive;
+  final ThreadCallback onArchive;
 
   /// Size of avatar in List item
   final double avatarSize;
@@ -59,7 +59,7 @@ class ThreadListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO(dayang) Save font styles in theme and retrieve from theme
-    final Message lastMessage = thread.messages.last;
+    final Message lastMessage = thread.lastMessage;
 
     final Widget avatar = new Container(
       child: new Alphatar.fromNameAndUrl(
@@ -98,7 +98,7 @@ class ThreadListItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         new Text(
-          thread.getSubject(),
+          thread.subject,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
           style: new TextStyle(
@@ -110,7 +110,7 @@ class ThreadListItem extends StatelessWidget {
           ),
         ),
         new Text(
-          lastMessage.generateSnippet(),
+          lastMessage.snippet,
           softWrap: false,
           overflow: TextOverflow.ellipsis,
           style: new TextStyle(

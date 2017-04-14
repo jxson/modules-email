@@ -22,7 +22,6 @@ void main() {
         child: new LabelListItem(
           key: folderListItemKey,
           label: label,
-          icon: Icons.inbox,
           onSelect: (Label f) {
             expect(f, label);
             taps++;

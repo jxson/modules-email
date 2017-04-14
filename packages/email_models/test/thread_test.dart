@@ -11,25 +11,27 @@ import 'package:test/test.dart';
 void main() {
   EmailFixtures fixtures = new EmailFixtures();
 
-  group('thread.getSubject()', () {
+  group('thread.subject', () {
     User sender = fixtures.user(name: 'Coco Yang');
     List<User> to = <User>[fixtures.user(name: 'David Yang')];
+    String subject = 'PLEAZE Feed Me!!!';
 
     test('populated message subject', () {
       Thread thread = fixtures.thread(<Message>[
         fixtures.message(
-            sender: sender,
-            to: to,
-            subject: 'Feed Me!!!',
-            text: 'Woof Woof. I\'m so hungry. You need to feed me!'),
+          sender: sender,
+          to: to,
+          timestamp: fixtures.timestamp(),
+        ),
         fixtures.message(
-            sender: sender,
-            to: to,
-            subject: 'PLEAZE Feed Me!!!',
-            text: 'Woof Woof. I\'m so hungry. You need to feed me!'),
+          sender: sender,
+          to: to,
+          timestamp: fixtures.timestamp() + 500,
+          subject: subject,
+        ),
       ]);
 
-      expect(thread.getSubject(), 'Feed Me!!!');
+      expect(thread.subject, subject);
     });
 
     test('null message subject', () {
@@ -41,7 +43,7 @@ void main() {
             text: 'Woof Woof. I\'m so hungry. You need to feed me!'),
       ]);
 
-      expect(thread.getSubject(), isNotNull);
+      expect(thread.subject, '(No Subject)');
     });
 
     test('empty message subject', () {
@@ -53,7 +55,7 @@ void main() {
             text: 'Woof Woof. I\'m so hungry. You need to feed me!'),
       ]);
 
-      expect(thread.getSubject(), '(No Subject)');
+      expect(thread.subject, '(No Subject)');
     });
   });
 
@@ -61,26 +63,24 @@ void main() {
     EmailFixtures fixtures = new EmailFixtures();
 
     test('message with attachments', () {
-      int ms = new DateTime.now().millisecondsSinceEpoch;
-      DateTime timestamp = new DateTime.fromMillisecondsSinceEpoch(ms);
       User coco = fixtures.user(name: 'Coco Yang');
       User david = fixtures.user(name: 'David Yang');
       User jason = fixtures.user(name: 'Jason C');
-      Thread thread = fixtures.thread(<Message>[
-        fixtures.message(
-          sender: coco,
-          to: <User>[david],
-          cc: <User>[jason],
-          text: "Woof Woof. I'm so hungry. You need to feed me!",
-          timestamp: timestamp,
-          isRead: true,
-          attachments: <Attachment>[
-            fixtures.attachment(
-              type: AttachmentType.youtubeVideo,
-            ),
-          ],
-        ),
-      ]);
+      int timestamp = fixtures.timestamp();
+      Message message = fixtures.message(
+        sender: coco,
+        to: <User>[david],
+        cc: <User>[jason],
+        text: "Woof Woof. I'm so hungry. You need to feed me!",
+        timestamp: timestamp,
+        isRead: true,
+        attachments: <Attachment>[
+          fixtures.attachment(
+            type: AttachmentType.youtubeVideo,
+          ),
+        ],
+      );
+      Thread thread = fixtures.thread(<Message>[message]);
 
       String payload = JSON.encode(thread);
       Map<String, dynamic> json = JSON.decode(payload);
@@ -90,16 +90,16 @@ void main() {
       expect(hydrated.snippet, equals(thread.snippet));
       expect(hydrated.historyId, equals(thread.historyId));
 
-      Message message = hydrated.messages[0];
-      expect(message, isNotNull);
-      expect(message.sender.displayName, equals(coco.name));
-      expect(message.sender.address, equals(coco.email));
-      expect(message.text,
+      Message hydratedMessage = hydrated.messages[message.id];
+      expect(hydratedMessage, isNotNull);
+      expect(hydratedMessage.sender.displayName, equals(coco.name));
+      expect(hydratedMessage.sender.address, equals(coco.email));
+      expect(hydratedMessage.text,
           equals("Woof Woof. I'm so hungry. You need to feed me!"));
-      expect(message.timestamp, equals(timestamp));
-      expect(message.isRead, isTrue);
+      expect(hydratedMessage.timestamp, equals(timestamp));
+      expect(hydratedMessage.isRead, isTrue);
 
-      Attachment attachment = message.attachments[0];
+      Attachment attachment = hydratedMessage.attachments[0];
       expect(attachment, isNotNull);
       expect(attachment.type, equals(AttachmentType.youtubeVideo));
 

@@ -12,7 +12,7 @@ flutter_app("nav") {
     "//application/lib/app/dart",
     "//application/services:services_dart",
     "//apps/modular/services/story:story_dart",
-    "//apps/modules/email/modules/session:client",
+    "//apps/modules/email/packages/email_flux",
     "//apps/modules/email/packages/email_session",
     "//apps/modules/email/packages/email_widgets",
     "//apps/modules/email/services:services_dart",
@@ -20,12 +20,13 @@ flutter_app("nav") {
     "//apps/mozart/services/views:views_dart",
     "//lib/fidl/dart",
     "//lib/flutter/packages/flutter",
+    "//lib/widgets/packages/widgets:lib.widgets",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"
 }
 
-fuchsia_component("email_nav_component") {
-  manifest = "email_nav_component.json"
+fuchsia_component("nav_component") {
+  manifest = "nav_component.json"
   flutter_program = ":nav"
 }

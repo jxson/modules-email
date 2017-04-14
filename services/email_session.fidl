@@ -4,6 +4,12 @@
 
 module email_session;
 
+// Message struct used for expanding/closing messages.
+struct Message {
+  string id;
+  string threadId;
+};
+
 [ServiceName="modules.EmailSession"]
 interface EmailSession {
 
@@ -12,4 +18,10 @@ interface EmailSession {
 
   // Instruct session to focus on displaying details of thread with given id.
   FocusThread(string threadId);
+
+  // Expand a message.
+  ExpandMessage(Message message);
+
+  // Close a message.
+  CloseMessage(Message message);
 };

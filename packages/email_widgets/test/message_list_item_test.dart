@@ -2,34 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_models/fixtures.dart';
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:models/user.dart';
 
 void main() {
-  String profileUrl =
-      'https://raw.githubusercontent.com/dvdwasibi/DogsOfFuchsia/master/coco.jpg';
+  EmailFixtures fixtures = new EmailFixtures();
+
   testWidgets(
       'Test to see if tapping the header for a MessageListItem will call the'
       'appropiate callback with given Message', (WidgetTester tester) async {
-    Message message = new Message(
-      sender: new Mailbox(
-        address: 'cocoyang@cu.te',
-        displayName: 'Coco Yang',
-      ),
-      recipientList: <Mailbox>[
-        new Mailbox(
-          address: 'david@ya.ng',
-          displayName: 'David Yang',
-        )
-      ],
-      senderProfileUrl: profileUrl,
-      subject: 'Feed Me!!!',
-      text: "Woof Woof. I'm so hungry. You need to feed me!",
-      timestamp: new DateTime.now(),
-      isRead: true,
+    Message message = fixtures.message(
+      expanded: true,
     );
 
     int taps = 0;
@@ -59,27 +45,15 @@ void main() {
       'Test to see if tapping REPLY in the quick actions popup-menu '
       'will call the appropiate callback with given Message',
       (WidgetTester tester) async {
-    Message message = new Message(
-      sender: new Mailbox(
-        address: 'cocoyang@cu.te',
-        displayName: 'Coco Yang',
-      ),
-      recipientList: <Mailbox>[
-        new Mailbox(
-          address: 'david@ya.ng',
-          displayName: 'David Yang',
-        )
-      ],
-      senderProfileUrl: profileUrl,
-      subject: 'Feed Me!!!',
-      text: "Woof Woof. I'm so hungry. You need to feed me!",
-      timestamp: new DateTime.now(),
-      isRead: true,
+    Message message = fixtures.message(
+      expanded: true,
     );
 
     int forwardTaps = 0;
     int replyTaps = 0;
     int replayAllTaps = 0;
+    int moreTaps = 0;
+    int headerTaps = 0;
 
     await tester.pumpWidget(new StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
@@ -91,30 +65,40 @@ void main() {
         },
         home: new Material(
           child: new MessageListItem(
-            message: message,
-            onForward: (Message m) {
-              // [expect] statements currently silently fail in this callback
-              // waiting on https://github.com/flutter/flutter/pull/6203
-              // to get merged to Flutter which will fix this issue
-              // TODO(dayang): Put back check for correct message being passed
-              // through callback once Flutter issue is fixed.;
-              forwardTaps++;
-            },
-            onReply: (Message m) {
-              replyTaps++;
-            },
-            onReplyAll: (Message m) {
-              replayAllTaps++;
-            },
-            isExpanded: true,
-          ),
+              message: message,
+              onForward: (Message m) {
+                // [expect] statements currently silently fail in this callback
+                // waiting on https://github.com/flutter/flutter/pull/6203
+                // to get merged to Flutter which will fix this issue
+                // TODO(dayang): Put back check for correct message being passed
+                // through callback once Flutter issue is fixed.;
+                forwardTaps++;
+              },
+              onReply: (Message m) {
+                replyTaps++;
+              },
+              onReplyAll: (Message m) {
+                replayAllTaps++;
+              },
+              onHeaderTap: (Message m) {
+                m.expanded = true;
+                headerTaps++;
+              }),
         ),
       );
     }));
 
     expect(forwardTaps, 0);
-    expect(replyTaps, 0);
+    expect(headerTaps, 0);
+    expect(moreTaps, 0);
     expect(replayAllTaps, 0);
+    expect(replyTaps, 0);
+
+    // Expand the message by tapping on the message's header.
+    await tester.tap(find.text(message.sender.displayText));
+    await tester.pump();
+    expect(message.expanded, isTrue);
+    expect(headerTaps, 1);
 
     // Open Popup Menu and tap 'Forward'
     await tester.tap(find.byWidgetPredicate(

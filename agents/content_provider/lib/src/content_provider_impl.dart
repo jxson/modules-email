@@ -174,7 +174,14 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
     List<ecp.Thread> retval =
         (await _labelToThreads[labelId].future).map((Thread thread) {
-      String payload = JSON.encode(thread);
+      String payload;
+      try {
+        payload = JSON.encode(thread);
+      } catch (err) {
+        String message = 'Failed to encode Thread: $err';
+        throw new FormatException(message);
+      }
+
       return new ecp.Thread.init(thread.id, payload);
     }).toList();
 

@@ -3,39 +3,33 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
-import 'package:email_session/session.dart';
-import 'package:email_session_client/client.dart';
-import 'package:email_widgets/widgets.dart';
+import 'package:email_flux/flux.dart';
+import 'package:email_session/client.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
+import 'package:flutter/widgets.dart';
+import 'package:lib.widgets/modular.dart';
 
-const String _moduleName = 'email_nav';
-final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
-EmailSessionModule _module;
+import 'src/screen.dart';
 
-void _log(String msg) {
-  print('[$_moduleName] $msg');
-}
-
-void _created(EmailSessionModule module) {
-  _module = module;
-}
-
-void _initialize(es.EmailSession service, EmailSessionLinkStore store) {
-  // HACK: Global reference must be set before store is accessed by widgets.
-  kEmailSessionStoreToken = new StoreToken(store);
-
-  runApp(new EmailNavScreen());
-}
-
-void _stop(void callback()) {
-  _log('Stop callback called.');
-  callback();
-}
-
-/// Main entry point to the email nav module.
 void main() {
-  _log('Email nav module started with context: $_context');
-  addEmailSessionModule(_context, 'email_nav', _created, _initialize, _stop);
+  EmailFluxStore fluxStore = new EmailFluxStore();
+  StoreToken token = new StoreToken(fluxStore);
+  ApplicationContext applicationContext =
+      new ApplicationContext.fromStartupInfo();
+
+  ModuleWidget<EmailSessionModuleModel> moduleWidget =
+      new ModuleWidget<EmailSessionModuleModel>(
+    applicationContext: applicationContext,
+    moduleModel: new EmailSessionModuleModel(
+      fluxStore: fluxStore,
+      name: 'nav',
+    ),
+    child: new EmailNavScreen(
+      token: token,
+    ),
+  );
+
+  moduleWidget.advertise();
+
+  runApp(moduleWidget);
 }

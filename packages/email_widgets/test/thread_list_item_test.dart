@@ -2,43 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_models/fixtures.dart';
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:models/user.dart';
 
 import 'helpers.dart';
 
 void main() {
-  String profileUrl =
-      'https://raw.githubusercontent.com/dvdwasibi/DogsOfFuchsia/master/coco.jpg';
+  EmailFixtures fixtures = new EmailFixtures();
+
   testWidgets(
       'Test to see if tapping on a ThreadListItem will call the'
       'appropiate callback with given Thread', (WidgetTester tester) async {
-    Key threadListItemKey = new UniqueKey();
-    Thread thread = new Thread(
-      id: '1',
-      messages: <Message>[
-        new Message(
-          sender: new Mailbox(
-            address: 'cocoyang@cu.te',
-            displayName: 'Coco Yang',
-          ),
-          recipientList: <Mailbox>[
-            new Mailbox(
-              address: 'david@ya.ng',
-              displayName: 'David Yang',
-            )
-          ],
-          senderProfileUrl: profileUrl,
-          subject: 'Feed Me!!!',
-          text: "Woof Woof. I'm so hungry. You need to feed me!",
-          timestamp: new DateTime.now(),
-          isRead: true,
-        ),
-      ],
-    );
+    Key key = new UniqueKey();
+    Thread thread = fixtures.thread();
 
     int taps = 0;
 
@@ -46,7 +25,7 @@ void main() {
         builder: (BuildContext context, StateSetter setState) {
       return new Material(
         child: new ThreadListItem(
-          key: threadListItemKey,
+          key: key,
           thread: thread,
           onSelect: (Thread t) {
             expect(t, thread);
@@ -57,35 +36,14 @@ void main() {
     }));
 
     expect(taps, 0);
-    await tester.tap(find.byKey(threadListItemKey));
+    await tester.tap(find.byKey(key));
     expect(taps, 1);
   });
 
   testWidgets(
       'Test to see if swiping right will call the appropiate archive callback '
       'with given Thread', (WidgetTester tester) async {
-    Thread thread = new Thread(
-      id: '1',
-      messages: <Message>[
-        new Message(
-          sender: new Mailbox(
-            address: 'cocoyang@cu.te',
-            displayName: 'Coco Yang',
-          ),
-          recipientList: <Mailbox>[
-            new Mailbox(
-              address: 'david@ya.ng',
-              displayName: 'David Yang',
-            )
-          ],
-          senderProfileUrl: profileUrl,
-          subject: 'Feed Me!!!',
-          text: "Woof Woof. I'm so hungry. You need to feed me!",
-          timestamp: new DateTime.now(),
-          isRead: true,
-        ),
-      ],
-    );
+    Thread thread = fixtures.thread();
 
     int swipes = 0;
 
@@ -120,28 +78,7 @@ void main() {
   testWidgets(
       'Test to see if swiping left will call the appropiate archive callback '
       'with given Thread', (WidgetTester tester) async {
-    Thread thread = new Thread(
-      id: '1',
-      messages: <Message>[
-        new Message(
-          sender: new Mailbox(
-            address: 'cocoyang@cu.te',
-            displayName: 'Coco Yang',
-          ),
-          recipientList: <Mailbox>[
-            new Mailbox(
-              address: 'david@ya.ng',
-              displayName: 'David Yang',
-            )
-          ],
-          senderProfileUrl: profileUrl,
-          subject: 'Feed Me!!!',
-          text: "Woof Woof. I'm so hungry. You need to feed me!",
-          timestamp: new DateTime.now(),
-          isRead: true,
-        ),
-      ],
-    );
+    Thread thread = fixtures.thread();
 
     int swipes = 0;
 

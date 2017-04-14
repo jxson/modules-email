@@ -11,25 +11,25 @@ flutter_app("thread") {
   deps = [
     "//application/lib/app/dart",
     "//application/services:services_dart",
-    "//apps/maxwell/services/resolver:resolver_dart",
     "//apps/modular/services/module:module_dart",
     "//apps/modular/services/story:story_dart",
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/widgets",
-    "//apps/modules/email/modules/session:client",
     "//apps/modules/email/packages/email_session",
+    "//apps/modules/email/packages/email_flux",
     "//apps/modules/email/packages/email_widgets",
     "//apps/modules/email/services:services_dart",
     "//apps/mozart/lib/flutter",
     "//apps/mozart/services/views:views_dart",
     "//lib/fidl/dart",
     "//lib/flutter/packages/flutter",
+    "//lib/widgets/packages/widgets:lib.widgets",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"
 }
 
-fuchsia_component("email_thread_component") {
-  manifest = "email_thread_component.json"
+fuchsia_component("thread_component") {
+  manifest = "thread_component.json"
   flutter_program = ":thread"
 }

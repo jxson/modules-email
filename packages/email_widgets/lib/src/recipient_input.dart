@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
-import 'package:models/user.dart';
 import 'package:widgets_meta/widgets_meta.dart';
 
 /// Callback type for updating the recipients of a new message
@@ -66,8 +66,10 @@ class _RecipientInputState extends State<RecipientInput> {
   }
 
   void _notifyRecipientsChanged() {
-    widget.onRecipientsChanged
-        ?.call(new List<Mailbox>.unmodifiable(_recipientList));
+    if (widget.onRecipientsChanged != null) {
+      widget
+          .onRecipientsChanged(new List<Mailbox>.unmodifiable(_recipientList));
+    }
   }
 
   void _handleInputChange(String value) {

@@ -14,7 +14,6 @@ import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
 import 'package:flutter/material.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 
-import 'src/email_session_doc.dart';
 import 'src/email_session_impl.dart';
 
 final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
@@ -36,8 +35,8 @@ class ModuleImpl extends Module {
   final LinkProxy emailSessionLinkProxy = new LinkProxy();
   final ModuleContextProxy _emailModuleContextProxy = new ModuleContextProxy();
 
-  /// A [EmailSessionImpl] instance.
-  EmailSessionImpl _emailSessionImpl;
+  /// An implementation for the [es.EmailSession] service.
+  EmailSessionImpl service;
 
   /// Bind an [InterfaceRequest] for a [Module] interface to this object.
   void bind(InterfaceRequest<Module> request) {
@@ -53,12 +52,10 @@ class ModuleImpl extends Module {
   ) {
     _log('ModuleImpl::initialize call');
     _emailModuleContextProxy.ctrl.bind(moduleContextHandle);
-    _emailModuleContextProxy.getLink(null,
-                                     emailSessionLinkProxy.ctrl.request());
-
-    // TODO(jasoncampbell): Start here.
-    // TODO(alangardner): Temporarily start with mock data
-    EmailSessionDoc sessionState = new EmailSessionDoc.withMockData();
+    _emailModuleContextProxy.getLink(
+      null,
+      emailSessionLinkProxy.ctrl.request(),
+    );
 
     /// Setup [ComponentContextProxy]
     ComponentContextProxy componentContextProxy = new ComponentContextProxy();
@@ -67,14 +64,18 @@ class ModuleImpl extends Module {
 
     /// Get [storyId] and [MessageQueue], and initialize [EmailSessionImpl]
     _emailModuleContextProxy.getStoryId((String storyId) {
-      _emailSessionImpl = new EmailSessionImpl(
-          storyId, emailSessionLinkProxy, sessionState, componentContextProxy)
-        ..initialize();
+      service = new EmailSessionImpl(
+        storyId: storyId,
+        link: emailSessionLinkProxy,
+        componentContext: componentContextProxy,
+      );
+
+      service.initialize();
 
       _serviceProviderImpl.addServiceForName(
         (InterfaceRequest<es.EmailSession> request) {
           _log('Received binding request for EmailSession');
-          _emailSessionImpl.bind(request);
+          service.bind(request);
         },
         es.EmailSession.serviceName,
       );
@@ -85,7 +86,7 @@ class ModuleImpl extends Module {
   @override
   void stop(void callback()) {
     _log('ModuleImpl::stop call');
-    _emailSessionImpl?.close();
+    service?.close();
     _serviceProviderImpl.close();
     emailSessionLinkProxy.ctrl.close();
     callback();

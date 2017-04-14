@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:email_models/fixtures.dart';
-import 'package:quiver/core.dart' as quiver;
 import 'package:widgets_meta/widgets_meta.dart';
 
 /// Represents a Gmail folder.
@@ -60,20 +59,4 @@ class Label {
 
     return json;
   }
-
-  @override
-  bool operator ==(Object o) =>
-      o is Label &&
-      o.id == id &&
-      o.name == name &&
-      o.unread == unread &&
-      o.type == type;
-
-  @override
-  int get hashCode => quiver.hashObjects(<dynamic>[
-        id.hashCode,
-        name.hashCode,
-        unread.hashCode,
-        type.hashCode,
-      ]);
 }

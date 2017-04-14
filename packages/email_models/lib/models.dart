@@ -5,5 +5,8 @@
 export 'src/attachment.dart';
 export 'src/label.dart';
 export 'src/label_group.dart';
+export 'src/mailbox.dart';
 export 'src/message.dart';
 export 'src/thread.dart';
+
+export 'package:models/user.dart';

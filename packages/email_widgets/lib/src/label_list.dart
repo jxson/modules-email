@@ -18,16 +18,16 @@ const double _kProfileHeaderHeight = 73.0;
 /// This widget provides the UI affordances to 'tab' between email folders.
 class LabelList extends StatelessWidget {
   /// List of [LabelGroup]s to render
-  List<LabelGroup> labelGroups;
+  final List<LabelGroup> labelGroups;
 
   /// Callback if a folder is selected
-  LabelActionCallback onSelectLabel;
+  final LabelCallback onSelectLabel;
 
   /// The selected folder. There can only be one currently selected folder
-  Label selectedLabel;
+  final Label selectedLabel;
 
   /// The [User] that is currently logged in
-  User user;
+  final User user;
 
   /// Creates new [LabelList]
   LabelList({

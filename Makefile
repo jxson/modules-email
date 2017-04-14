@@ -12,7 +12,7 @@ common_makefile := $(realpath $(common_root)/Makefile)
 
 PROJECT := email
 FLUTTER_TARGET := modules/story
-FUCHSIA_TARGET := email_story
+FUCHSIA_TARGET := email/story
 
 include $(common_makefile)
 

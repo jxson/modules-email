@@ -4,7 +4,6 @@
 
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
-import 'package:models/user.dart';
 
 import 'editor_action_bar_header.dart';
 import 'message_text_input.dart';
@@ -30,7 +29,7 @@ const TextStyle _kInputStyle = const TextStyle(
 /// Email Editor Screen
 class EditorScreen extends StatefulWidget {
   /// Callback that gets fired any time the message draft is changed
-  final MessageActionCallback onDraftChanged;
+  final MessageCallback onDraftChanged;
 
   /// Optional initial message draft to start out with
   final Message draft;

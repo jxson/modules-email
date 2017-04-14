@@ -13,7 +13,6 @@ dart_package("email_widgets") {
     "//apps/modules/common/packages/widgets_meta",
     "//apps/modules/common/packages/widgets",
     "//apps/modules/email/packages/email_models",
-    "//apps/modules/email/packages/email_session",
     "//lib/flutter/packages/flutter",
     "//lib/widgets/packages/widgets:lib.widgets",
     "//third_party/dart-pkg/pub/flutter_flux",

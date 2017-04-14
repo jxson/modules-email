@@ -7,16 +7,13 @@ import 'package:email_models/models.dart';
 /// Common Type Definitions
 
 /// Callback function signature for an action on a message
-typedef void MessageActionCallback(Message message);
+typedef void MessageCallback(Message message);
 
 /// Callback function signature for an action on a thread
-typedef void ThreadActionCallback(Thread thread);
+typedef void ThreadCallback(Thread thread);
 
 /// Callback function signature for an action on a folder
-typedef void LabelActionCallback(Label folder);
-
-/// Boolean predicate function for a message
-typedef bool MessagePredicate(Message message);
+typedef void LabelCallback(Label folder);
 
 /// Void callback function signature for a string
 typedef void StringCallback(String string);

@@ -4,13 +4,12 @@
 
 import 'package:collection/collection.dart';
 import 'package:email_models/fixtures.dart';
-import 'package:quiver/core.dart' as quiver;
 import 'package:widgets_meta/widgets_meta.dart';
 
 import 'message.dart';
 
-const ListEquality<Message> _messageListEquality =
-    const ListEquality<Message>(const DefaultEquality<Message>());
+const MapEquality<String, Message> _messageListEquality =
+    const MapEquality<String, Message>();
 
 /// Represents a single Gmail Thread
 /// https://developers.google.com/gmail/api/v1/reference/users/threads#resource
@@ -25,30 +24,46 @@ class Thread {
   /// The ID of the last history record that modified this thread
   final String historyId;
 
-  /// The list of messages in the thread
-  final List<Message> messages;
+  Map<String, Message> _messages;
 
   /// Constructor
   Thread({
     this.id,
     this.snippet,
     this.historyId,
-    // HACK(@dayang): Removed the immutability of the actual message list for
-    // now. Messages themselves are still immutable
-    this.messages,
-  });
+    Map<String, Message> messages,
+  }) {
+    this._messages = messages;
+  }
 
   /// Create a [Thread] from JSON.
   factory Thread.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> jsonMessages = json['messages'];
+    Map<String, Message> messages = <String, Message>{};
+
+    if (jsonMessages != null) {
+      jsonMessages.values.forEach((dynamic json) {
+        try {
+          Message message = new Message.fromJson(json);
+          messages[message.id] = message;
+        } catch (err) {
+          String message = 'Failed to decode Message: $err';
+          throw new FormatException(message);
+        }
+      });
+    }
+
     return new Thread(
       id: json['id'],
       snippet: json['snippet'],
       historyId: json['historyId'],
-      messages: json['messages'].map((Map<String, dynamic> m) {
-        return new Message.fromJson(m);
-      }).toList(),
+      messages: messages,
     );
   }
+
+  /// The list of messages in the thread
+  Map<String, Message> get messages =>
+      new UnmodifiableMapView<String, Message>(_messages);
 
   @override
   String toString() {
@@ -67,38 +82,50 @@ class Thread {
     json['id'] = id;
     json['snippet'] = snippet;
     json['historyId'] = historyId;
-    json['messages'] =
-        messages.map((Message message) => message.toJson()).toList();
+    json['messages'] = <String, dynamic>{};
+
+    messages.forEach((String id, Message message) {
+      try {
+        json['messages'][id] = message.toJson();
+      } catch (err) {
+        String message = 'Failed to encode Message: $err';
+        throw new FormatException(message);
+      }
+    });
 
     return json;
+  }
+
+  List<Message> _sortedMessages = <Message>[];
+
+  /// Get the last message.
+  Message get lastMessage =>
+      sortedMessages.isEmpty ? null : sortedMessages.last;
+
+  /// Get the first message.
+  Message get firstMessage =>
+      sortedMessages.isEmpty ? null : sortedMessages.first;
+
+  /// A the list of messages sorted from newest to oldest.
+  List<Message> get sortedMessages {
+    if (_sortedMessages.isNotEmpty) return _sortedMessages;
+
+    _sortedMessages = messages.values.toList();
+    _sortedMessages.sort((Message a, Message b) {
+      return b.timestamp.compareTo(a.timestamp);
+    });
+
+    return _sortedMessages;
   }
 
   /// Gets the subject of the thread
   /// For now, this will return the subject of the first message of the thread
   /// If there is no subject specified, a default of '(no subject)' will be set
-  String getSubject() {
-    if (this.messages.isNotEmpty &&
-        this.messages[0].subject != null &&
-        this.messages[0].subject.isNotEmpty) {
-      return this.messages[0].subject;
-    } else {
-      return '(No Subject)';
-    }
+  String get subject {
+    Message message = firstMessage;
+    String subject = message?.subject;
+    bool useDefault = (subject == null || subject.isEmpty);
+
+    return useDefault ? '(No Subject)' : subject;
   }
-
-  @override
-  bool operator ==(Object o) =>
-      o is Thread &&
-      o.id == id &&
-      o.snippet == snippet &&
-      o.historyId == historyId &&
-      _messageListEquality.equals(o.messages, messages);
-
-  @override
-  int get hashCode => quiver.hashObjects(<dynamic>[
-        id,
-        snippet,
-        historyId,
-        messages,
-      ]);
 }

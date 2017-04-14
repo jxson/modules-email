@@ -6,7 +6,6 @@ import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:models/user.dart';
 
 void main() {
   String profileUrl =
@@ -28,7 +27,7 @@ void main() {
       senderProfileUrl: profileUrl,
       subject: 'Feed Me!!!',
       text: "Woof Woof. I'm so hungry. You need to feed me!",
-      timestamp: new DateTime.now(),
+      timestamp: (new DateTime.now()).millisecondsSinceEpoch,
       isRead: true,
     );
 
@@ -41,15 +40,15 @@ void main() {
       return new Material(
         child: new MessageActionBarFooter(
           message: message,
-          onReplyAllMessage: (Message m) {
+          onReplyAll: (Message m) {
             expect(m, message);
             replyAlltaps++;
           },
-          onReplyMessage: (Message m) {
+          onReply: (Message m) {
             expect(m, message);
             replyTaps++;
           },
-          onForwardMessage: (Message m) {
+          onForward: (Message m) {
             expect(m, message);
             forwardTaps++;
           },

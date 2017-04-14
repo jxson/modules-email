@@ -4,12 +4,11 @@
 
 import 'package:collection/collection.dart';
 import 'package:email_models/fixtures.dart';
-import 'package:models/user.dart';
-import 'package:quiver/core.dart' as quiver;
 import 'package:util/time_util.dart';
 import 'package:widgets_meta/widgets_meta.dart';
 
 import 'attachment.dart';
+import 'mailbox.dart';
 
 const ListEquality<Mailbox> _mailboxListEquality =
     const ListEquality<Mailbox>(const DefaultEquality<Mailbox>());
@@ -48,11 +47,15 @@ class Message {
   /// List of attachments for given email
   final List<Attachment> attachments;
 
-  /// Time that Email was received
-  final DateTime timestamp;
+  /// Timestamp (epoch ms) used for ordering.
+  final int timestamp;
 
   /// True if Email Message has been read
   final bool isRead;
+
+  /// If a message is expanded or not, this is UI state not derived from REST
+  /// API.
+  bool expanded;
 
   /// Constructor
   Message({
@@ -64,6 +67,7 @@ class Message {
     this.text,
     this.timestamp,
     this.isRead,
+    this.expanded: false,
     List<Uri> links,
     List<Attachment> attachments,
     List<Mailbox> recipientList,
@@ -78,9 +82,6 @@ class Message {
 
   /// Create a message from JSON.
   factory Message.fromJson(Map<String, dynamic> json) {
-    int ms = json['timestamp'];
-    DateTime _timestamp = new DateTime.fromMillisecondsSinceEpoch(ms);
-
     Iterable<Uri> links = json['links']?.map((String link) => Uri.parse(link));
 
     Iterable<Attachment> attachments = json['attachments']
@@ -99,12 +100,13 @@ class Message {
       senderProfileUrl: json['senderProfileUrl'],
       subject: json['subject'],
       text: json['text'],
-      timestamp: _timestamp,
+      timestamp: json['timestamp'],
       isRead: json['isRead'],
       links: links != null ? links.toList() : const <Uri>[],
       attachments: attachments != null ? attachments.toList() : const <Uri>[],
       recipientList: to != null ? to.toList() : const <Mailbox>[],
       ccList: cc != null ? cc.toList() : const <Mailbox>[],
+      expanded: json['expanded'],
     );
   }
 
@@ -112,7 +114,7 @@ class Message {
   Map<String, dynamic> toJson() {
     // TODO(jxson): MailBox models should be moved to User models, MailBox
     // representation should then user the standard User model for it's
-    // backing data.
+    // backing data. See #SO-341
     Map<String, dynamic> json = <String, dynamic>{
       'id': id,
       'threadId': threadId,
@@ -120,12 +122,13 @@ class Message {
       'senderProfileUrl': senderProfileUrl,
       'subject': subject,
       'text': text,
-      'timestamp': timestamp.millisecondsSinceEpoch,
+      'timestamp': timestamp,
       'isRead': isRead,
       'links': links.map((Uri l) => l.toString()).toList(),
       'to': recipientList.map((Mailbox r) => r.toJson()).toList(),
       'cc': ccList.map((Mailbox r) => r.toJson()).toList(),
       'attachments': attachments.map((Attachment a) => a.toJson()).toList(),
+      'expanded': expanded,
     };
 
     return json;
@@ -139,43 +142,17 @@ class Message {
         ')';
   }
 
-  /// Generates preview text for message
+  /// Preview text
   ///
   /// Strips all newline characters
-  String generateSnippet() {
+  String get snippet {
     return (text ?? '').replaceAll('\r\n', ' ').replaceAll('\n', ' ');
   }
 
   /// Get 'Display Date' for [Message] as the relative display date
   String get displayDate {
     return TimeUtil.relativeDisplayDate(
-      date: timestamp,
+      date: new DateTime.fromMillisecondsSinceEpoch(timestamp),
     );
   }
-
-  @override
-  bool operator ==(Object o) =>
-      o is Message &&
-      o.id == id &&
-      o.sender == sender &&
-      o.senderProfileUrl == senderProfileUrl &&
-      _mailboxListEquality.equals(o.recipientList, recipientList) &&
-      _mailboxListEquality.equals(o.ccList, ccList) &&
-      o.subject == subject &&
-      o.text == text &&
-      o.timestamp == timestamp &&
-      o.isRead == isRead;
-
-  @override
-  int get hashCode => quiver.hashObjects(<dynamic>[
-        id,
-        sender,
-        senderProfileUrl,
-        recipientList,
-        ccList,
-        subject,
-        text,
-        timestamp,
-        isRead,
-      ]);
 }

@@ -12,16 +12,16 @@ import 'type_defs.dart';
 /// Contains [Thread] level actions (Archive, Delete) and thread subject
 class ThreadActionBarHeader extends StatelessWidget {
   /// [Thread] that this header is rendered for
-  Thread thread;
+  final Thread thread;
 
   /// Callback for archiving thread
-  ThreadActionCallback onArchive;
+  final ThreadCallback onArchive;
 
   /// Callback for deleting thread
-  ThreadActionCallback onDelete;
+  final ThreadCallback onDelete;
 
   /// Callback for 'more-actions/vertical-ellipsis' affordance
-  ThreadActionCallback onMoreActions;
+  final ThreadCallback onMoreActions;
 
   /// Creates an action bar header for a [Thread]
   // TODO (dayang) Action callbcks should be optional and corresponding
@@ -62,7 +62,7 @@ class ThreadActionBarHeader extends StatelessWidget {
             constraints: new BoxConstraints(maxHeight: 86.0),
             padding: const EdgeInsets.all(16.0),
             child: new Text(
-              thread.getSubject(),
+              thread.subject,
               overflow: TextOverflow.ellipsis,
               style: new TextStyle(
                 fontSize: 18.0,

@@ -3,43 +3,35 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
-import 'package:email_session/session.dart';
-import 'package:email_session_client/client.dart';
-import 'package:email_widgets/widgets.dart';
+import 'package:email_flux/flux.dart';
+import 'package:email_session/client.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
+import 'package:lib.widgets/modular.dart';
 
-const String _moduleName = 'email_thread_list';
-final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
-EmailSessionModule _module;
+import 'src/screen.dart';
 
-void _log(String msg) {
-  print('[$_moduleName] $msg');
-}
+void main() {
+  EmailFluxStore fluxStore = new EmailFluxStore();
+  StoreToken token = new StoreToken(fluxStore);
 
-void _created(EmailSessionModule module) {
-  _module = module;
-}
+  ModuleWidget<EmailSessionModuleModel> moduleWidget =
+      new ModuleWidget<EmailSessionModuleModel>(
+    applicationContext: new ApplicationContext.fromStartupInfo(),
+    moduleModel: new EmailSessionModuleModel(
+      name: 'thread_list',
+      fluxStore: fluxStore,
+    ),
+    child: new EmailThreadListScreen(
+      token: token,
+    ),
+  );
 
-void _initialize(es.EmailSession service, EmailSessionLinkStore store) {
-  // HACK: Global reference must be set before store is accessed by widgets.
-  kEmailSessionStoreToken = new StoreToken(store);
+  moduleWidget.advertise();
 
   runApp(new MaterialApp(
-    title: 'Email List Module',
-    home: new EmailListScreen(),
+    title: 'Email Thread List Module',
+    home: moduleWidget,
     theme: new ThemeData(primarySwatch: Colors.blue),
     debugShowCheckedModeBanner: false,
   ));
-}
-
-void _stop(void callback()) {
-  callback();
-}
-
-/// Main entry point to the email folder list module.
-void main() {
-  _log('Email list module started with context: $_context');
-  addEmailSessionModule(_context, _moduleName, _created, _initialize, _stop);
 }

@@ -13,7 +13,7 @@ import 'package:meta/meta.dart';
 /// and vice versa.
 class ArchiveDismissibleBackground extends StatelessWidget {
   /// Swipe direction for [Dismissible]
-  DismissDirection direction;
+  final DismissDirection direction;
 
   /// Creates a archive background for a [Dismissible]
   ArchiveDismissibleBackground({

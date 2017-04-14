@@ -13,42 +13,42 @@ import 'type_defs.dart';
 /// This footer will be typically found at the end of a individual ThreadView
 class MessageActionBarFooter extends StatelessWidget {
   /// Given thread associated with this action bar
-  Message message;
+  final Message message;
 
   /// Callback for selecting forward
-  MessageActionCallback onForwardMessage;
+  final MessageCallback onForward;
 
   /// Callback for selecting reply all
-  MessageActionCallback onReplyAllMessage;
+  final MessageCallback onReplyAll;
 
   /// Callback for selecting reply
-  MessageActionCallback onReplyMessage;
+  final MessageCallback onReply;
 
   /// Constructor to create a [MessageActionBarFooter]
   MessageActionBarFooter({
     Key key,
     @required this.message,
-    @required this.onForwardMessage,
-    @required this.onReplyAllMessage,
-    @required this.onReplyMessage,
+    @required this.onForward,
+    @required this.onReplyAll,
+    @required this.onReply,
   })
       : super(key: key) {
     assert(message != null);
-    assert(onForwardMessage != null);
-    assert(onReplyAllMessage != null);
-    assert(onReplyMessage != null);
+    assert(onForward != null);
+    assert(onReplyAll != null);
+    assert(onReply != null);
   }
 
   void _handleForwardMessage() {
-    onForwardMessage(message);
+    onForward(message);
   }
 
   void _handleReplyAllMessage() {
-    onReplyAllMessage(message);
+    onReplyAll(message);
   }
 
   void _handleReplyMessage() {
-    onReplyMessage(message);
+    onReply(message);
   }
 
   Widget _buildIconWithText({String text, IconData icon}) {

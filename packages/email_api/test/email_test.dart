@@ -57,7 +57,7 @@ void main() {
       print('= * historyId: ${thread.historyId}');
       print('= * messages: ');
 
-      thread.messages.forEach((Message message) {
+      thread.messages.forEach((String id, Message message) {
         print('=     Message: $message');
         print('=     * id: ${message.id}');
         print('=     * timestamp: ${message.timestamp}');

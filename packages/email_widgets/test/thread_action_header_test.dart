@@ -2,40 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_models/fixtures.dart';
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:models/user.dart';
 
 void main() {
-  String profileUrl =
-      'https://raw.githubusercontent.com/dvdwasibi/DogsOfFuchsia/master/coco.jpg';
-  testWidgets(
-      'Test to see if tapping on the CLOSE, ARCHIVE, DELETE, and MORE ACTIONS'
-      'buttons will call the appropiate callbacks',
-      (WidgetTester tester) async {
-    Thread thread = new Thread(
-      messages: <Message>[
-        new Message(
-          sender: new Mailbox(
-            address: 'cocoyang@cu.te',
-            displayName: 'Coco Yang',
-          ),
-          recipientList: <Mailbox>[
-            new Mailbox(
-              address: 'david@ya.ng',
-              displayName: 'David Yang',
-            )
-          ],
-          senderProfileUrl: profileUrl,
-          subject: 'Feed Me!!!',
-          text: "Woof Woof. I'm so hungry. You need to feed me!",
-          timestamp: new DateTime.now(),
-          isRead: true,
-        ),
-      ],
-    );
+  EmailFixtures fixtures = new EmailFixtures();
+
+  testWidgets('Header actions', (WidgetTester tester) async {
+    Thread thread = fixtures.thread();
 
     int archiveTaps = 0;
     int deleteTaps = 0;

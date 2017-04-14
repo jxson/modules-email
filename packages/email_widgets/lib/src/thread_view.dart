@@ -6,50 +6,54 @@ import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+import 'message_action_bar_footer.dart';
 import 'message_list_item.dart';
+import 'thread_action_bar_header.dart';
 import 'type_defs.dart';
 
 /// View for a single email [Thread].
 class ThreadView extends StatelessWidget {
   /// Given thread to render
-  Thread thread;
-
-  /// Set of Ids for messages that should be expanded
-  MessagePredicate messageExpanded;
+  final Thread thread;
 
   /// Callback for when a given message is selected in thread
-  MessageActionCallback onSelectMessage;
+  final MessageCallback onSelect;
 
   /// Callback for selecting forward for a message
-  MessageActionCallback onForwardMessage;
+  final MessageCallback onForward;
 
   /// Callback for selecting reply all for a message
-  MessageActionCallback onReplyAllMessage;
+  final MessageCallback onReplyAll;
 
   /// Callback for selecting reply for a message
-  MessageActionCallback onReplyMessage;
+  final MessageCallback onReply;
 
-  /// Optional footer widget that is rendered at the bottom of the thread
-  Widget footer;
+  /// Callback for archiving a message.
+  final ThreadCallback onArchive;
 
-  /// Optional header widget that is rendered at the top of the thread
-  Widget header;
+  /// Callback for archiving a message.
+  final ThreadCallback onMoreActions;
+
+  /// Callback for archiving a message.
+  final ThreadCallback onDelete;
+
+  // onMoreActions: this.onMoreActions,
+  // onDelete: this.onDelete,
 
   /// Creates a ThreadView for given [Thread]
   ThreadView({
     Key key,
+    @required this.onArchive,
+    @required this.onDelete,
+    @required this.onForward,
+    @required this.onMoreActions,
+    @required this.onReply,
+    @required this.onReplyAll,
+    @required this.onSelect,
     @required this.thread,
-    @required this.onForwardMessage,
-    @required this.onReplyAllMessage,
-    @required this.onReplyMessage,
-    this.footer,
-    this.header,
-    this.onSelectMessage,
-    this.messageExpanded,
   })
       : super(key: key) {
     assert(thread != null);
-    messageExpanded ??= (_) => false;
   }
 
   @override
@@ -61,7 +65,7 @@ class ThreadView extends StatelessWidget {
     List<Widget> listChildren = <Widget>[];
 
     // Add the messages.
-    thread.messages.forEach((Message message) {
+    thread.messages.values.forEach((Message message) {
       listChildren.add(new Container(
         decoration: new BoxDecoration(
           border: new Border(
@@ -74,23 +78,27 @@ class ThreadView extends StatelessWidget {
         child: new MessageListItem(
           message: message,
           key: new ObjectKey(message),
-          onHeaderTap: onSelectMessage,
-          isExpanded: messageExpanded(message),
-          onForward: onForwardMessage,
-          onReply: onReplyMessage,
-          onReplyAll: onReplyAllMessage,
+          onHeaderTap: onSelect,
+          onForward: onForward,
+          onReply: onReply,
+          onReplyAll: onReplyAll,
         ),
       ));
     });
 
-    // Append footer widget to end of the list of messages if specified
-    if (footer != null) {
-      listChildren.add(footer);
-    }
+    listChildren.add(new MessageActionBarFooter(
+      message: thread.lastMessage,
+      onForward: this.onForward,
+      onReplyAll: this.onReplyAll,
+      onReply: this.onReply,
+    ));
 
-    if (header != null) {
-      columnChildren.add(header);
-    }
+    columnChildren.add(new ThreadActionBarHeader(
+      thread: thread,
+      onArchive: this.onArchive,
+      onMoreActions: this.onMoreActions,
+      onDelete: this.onDelete,
+    ));
 
     columnChildren.add(new Expanded(
       flex: 1,

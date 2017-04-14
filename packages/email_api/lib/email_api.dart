@@ -164,9 +164,11 @@ class EmailAPI {
   /// Get a [Thread] from the Gmail REST API.
   Future<Thread> _thread(String id) async {
     gmail.Thread t = await _gmail.users.threads.get('me', id);
-    List<Message> messages =
-        await Future.wait(t.messages.map((gmail.Message m) {
-      return this._message(m);
+    Map<String, Message> messages = <String, Message>{};
+
+    await Future.wait(t.messages.map((gmail.Message m) async {
+      Message message = await _message(m);
+      messages[message.id] = message;
     }));
 
     return new Thread(
@@ -180,7 +182,7 @@ class EmailAPI {
   /// Returns the number of new email for the given labelId since the previous
   /// threads() call on the labelId.
   // TODO(vardhan): This returns a false positive for all history events, not
-  // just new email. Filter, or rework the behaviour of updating emails.
+  // just new email. Filter, or rework the behavior of updating emails.
   Future<int> fetchNewEmail({String labelId: 'INBOX', int max: 15}) async {
     // It could be that we have not finished fetching initial emails yet. In
     // which case, there are no new emails.
@@ -218,7 +220,14 @@ class EmailAPI {
 
     Stream<Thread> stream = new Stream<Thread>.fromFutures(requests);
     List<Thread> threads = await stream.toList();
-    // According to the Gmail API, the response is ordered from newest->oldest.
+
+    threads.sort((Thread a, Thread b) {
+      Message lastA = a.lastMessage;
+      Message lastB = b.lastMessage;
+
+      return lastB.timestamp.compareTo(lastA.timestamp);
+    });
+
     _latestHistoryId = threads[0].historyId;
 
     return threads;
@@ -298,9 +307,8 @@ String _normalizeLabelName(String string) {
   return value[0].toUpperCase() + value.substring(1).toLowerCase();
 }
 
-DateTime _timestamp(String stamp) {
-  int ms = int.parse(stamp);
-  return new DateTime.fromMillisecondsSinceEpoch(ms);
+int _timestamp(String stamp) {
+  return int.parse(stamp);
 }
 
 List<Mailbox> _split(gmail.MessagePartHeader header) {

@@ -14,9 +14,9 @@ group("test") {
   testonly = true
 
   deps = [
+    "//apps/modules/email/packages/email_flux:test",
     "//apps/modules/email/packages/email_api:test",
     "//apps/modules/email/packages/email_models:test",
-    "//apps/modules/email/packages/email_session:test",
     "//apps/modules/email/packages/email_widgets:test",
   ]
 }
