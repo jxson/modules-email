@@ -5,8 +5,8 @@
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:lib.widgets/widgets.dart';
 import 'package:meta/meta.dart';
-import 'package:widgets/user.dart';
 import 'package:widgets_meta/widgets_meta.dart';
 
 final Color _kSelectedBgColor = Colors.blue[200].withOpacity(0.2);

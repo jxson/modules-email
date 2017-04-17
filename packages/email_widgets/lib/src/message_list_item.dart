@@ -4,9 +4,9 @@
 
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
+import 'package:lib.widgets/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:models/user.dart';
-import 'package:widgets/user.dart';
 
 import 'message_content.dart';
 import 'type_defs.dart';

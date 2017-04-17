@@ -16,6 +16,7 @@ dart_package("email_widgets") {
     "//apps/modules/email/packages/email_models",
     "//apps/modules/email/packages/email_session",
     "//lib/flutter/packages/flutter",
+    "//lib/widgets/packages/widgets:lib.widgets",
     "//third_party/dart-pkg/pub/flutter_flux",
     "//third_party/dart-pkg/pub/quiver",
   ]

@@ -4,9 +4,9 @@
 
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
+import 'package:lib.widgets/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:models/user.dart';
-import 'package:widgets/user.dart';
 
 import 'label_list_item.dart';
 import 'type_defs.dart';
@@ -110,7 +110,10 @@ class LabelList extends StatelessWidget {
           softWrap: false,
           overflow: TextOverflow.ellipsis,
         ),
-        leading: new Alphatar.fromUser(user: user),
+        leading: new Alphatar.fromNameAndUrl(
+          name: user.name,
+          avatarUrl: user.picture,
+        ),
       ),
     );
   }
