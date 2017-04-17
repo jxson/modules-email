@@ -5,9 +5,14 @@
 group("modules") {
   deps = [
     "nav",
+    "nav:email_nav_component",
     "session",
+    "session:email_session_component",
     "story",
+    "story:email_story_component",
     "thread_list",
+    "thread_list:email_thread_list_component",
     "thread",
+    "thread:email_thread_component",
   ]
 }
