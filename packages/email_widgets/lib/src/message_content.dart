@@ -37,46 +37,42 @@ class _MessageContentState extends State<MessageContent> {
     super.initState();
 
     void childAdder(EmbeddedChild child) {
-      embeddedChildren.add(child);
+      if (mounted) {
+        setState(() => embeddedChildren.add(child));
+      }
     }
 
     widget.message.attachments.forEach((Attachment attachment) {
       try {
         switch (attachment.type) {
           case AttachmentType.uspsShipping:
-            embeddedChildren.add(
-              kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-                docRoot: 'usps-doc',
-                type: 'usps-shipping',
-                propKey: 'usps-tracking-key',
-                contract: 'display_attachment',
-                value: attachment.value,
-                childAdder: childAdder,
-              ),
+            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
+              docRoot: 'usps-doc',
+              type: 'usps-shipping',
+              propKey: 'usps-tracking-key',
+              contract: 'display_attachment',
+              value: attachment.value,
+              childAdder: childAdder,
             );
             break;
 
           case AttachmentType.youtubeVideo:
-            embeddedChildren.add(
-              kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-                docRoot: 'youtube-doc',
-                type: 'youtube-video',
-                propKey: 'youtube-video-id',
-                contract: 'display_attachment',
-                value: attachment.value,
-                childAdder: childAdder,
-              ),
+            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
+              docRoot: 'youtube-doc',
+              type: 'youtube-video',
+              propKey: 'youtube-video-id',
+              contract: 'display_attachment',
+              value: attachment.value,
+              childAdder: childAdder,
             );
             break;
 
           case AttachmentType.orderReceipt:
-            embeddedChildren.add(
-              kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-                type: 'order-receipt',
-                contract: 'interactive_receipt',
-                value: null,
-                childAdder: childAdder,
-              ),
+            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
+              type: 'order-receipt',
+              contract: 'interactive_receipt',
+              value: null,
+              childAdder: childAdder,
             );
         }
       } catch (e) {
