@@ -11,8 +11,6 @@ flutter_app("thread") {
   deps = [
     "//application/lib/app/dart",
     "//application/services:services_dart",
-    "//apps/maxwell/services/action_log:action_log_dart",
-    "//apps/maxwell/services/user:user_dart",
     "//apps/maxwell/services/resolver:resolver_dart",
     "//apps/modular/services/module:module_dart",
     "//apps/modular/services/story:story_dart",

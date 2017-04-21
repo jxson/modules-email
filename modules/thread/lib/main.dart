@@ -5,8 +5,6 @@
 import 'dart:convert';
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:apps.maxwell.services.action_log/action_log.fidl.dart';
-import 'package:apps.maxwell.services.user/intelligence_services.fidl.dart';
 import 'package:apps.maxwell.services.resolver/resolver.fidl.dart' as resolver;
 import 'package:apps.modular.services.module/module_controller.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
@@ -38,14 +36,6 @@ void _created(EmailSessionModule module) {
 void _initialize(es.EmailSession service, EmailSessionLinkStore store) {
   // HACK: Global reference must be set before store is accessed by widgets.
   kEmailSessionStoreToken = new StoreToken(store);
-
-  IntelligentServicesProxy intelligenceServices = new IntelligentServicesProxy();
-  _module.moduleContext.GetIntelligenceServices(
-      intelligenceServices.ctrl.request());
-  ActionLogProxy actionLog = new ActionLogProxy();
-  intelligenceServices.GetActionLog(actionLog.ctrl.request());
-  // TODO(azani): Figure out what to pass in the params.
-  actionLog.logAction("DisplayEmail", null);
 
   _addEmbeddedChildBuilder();
 
