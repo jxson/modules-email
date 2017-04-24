@@ -51,8 +51,6 @@ class EmailContentProviderAgent extends Agent {
     InterfaceHandle<AgentContext> agentContextHandle,
     void callback(),
   ) async {
-    _log('Initialize called');
-
     // Get the ComponentContext
     AgentContextProxy agentContext = new AgentContextProxy()
       ..ctrl.bind(agentContextHandle);
@@ -99,8 +97,6 @@ class EmailContentProviderAgent extends Agent {
   /// Implements [Agent] interface.
   @override
   void stop(void callback()) {
-    _log('Stop called');
-
     _emailContentProviderImpl.close();
     _outgoingServicesBindings
         .forEach((ServiceProviderBinding binding) => binding.close());

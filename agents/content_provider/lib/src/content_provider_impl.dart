@@ -107,7 +107,6 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   /// email for each loaded labelId, and if they exist, send a notification to
   /// all interested parties (who subscribed using [registerForUpdates]).
   Future<Null> onRefresh() async {
-    _log('Refreshing email..');
     EmailAPI _api = await API.get();
 
     for (String labelId in _labelToThreads.keys) {
