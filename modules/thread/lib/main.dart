@@ -59,35 +59,26 @@ void main() {
 
 void _addEmbeddedChildBuilder() {
   kEmbeddedChildProvider.setGeneralEmbeddedChildBuilder(({
-    String docRoot,
-    String type,
-    String propKey,
     String contract,
-    dynamic value,
+    dynamic initialData,
     EmbeddedChildAdder childAdder,
   }) {
-    String encodedChildDoc;
-    if (docRoot != null && propKey != null && propKey is String) {
-      Map<String, dynamic> childDoc = <String, dynamic>{
-        propKey: value,
-        '@type': type
-      };
-      encodedChildDoc = JSON.encode(childDoc);
-    }
+    String encodedChildDoc = JSON.encode(initialData);
 
     _resolver.resolveModules(contract, encodedChildDoc,
         (List<resolver.ModuleInfo> modules) {
       if (modules.length < 1) {
-        throw new Exception('No modules found to display attachment!');
+        return;
       }
+
       String moduleUrl = modules[0].componentId;
 
       // Create a new link, add necessary data to it, and create a duplicate of
       // it to be passed to the sub-module.
       LinkProxy link = new LinkProxy();
-      _module.moduleContext.getLink(type, link.ctrl.request());
+      _module.moduleContext.getLink(contract, link.ctrl.request());
       if (encodedChildDoc != null) {
-        link.set(<String>[docRoot], encodedChildDoc);
+        link.set(<String>[contract], encodedChildDoc);
       }
       link.ctrl.close();
       ModuleControllerProxy moduleController = new ModuleControllerProxy();
@@ -96,7 +87,7 @@ void _addEmbeddedChildBuilder() {
       _module.moduleContext.startModule(
         moduleUrl, // module name
         moduleUrl,
-        type, // link name
+        contract, // link name
         null,
         null,
         moduleController.ctrl.request(),

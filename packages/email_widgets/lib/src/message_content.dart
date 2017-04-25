@@ -42,47 +42,18 @@ class _MessageContentState extends State<MessageContent> {
       }
     }
 
-    widget.message.attachments.forEach((Attachment attachment) {
-      try {
-        switch (attachment.type) {
-          case AttachmentType.uspsShipping:
-            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-              docRoot: 'usps-doc',
-              type: 'usps-shipping',
-              propKey: 'usps-tracking-key',
-              contract: 'display_attachment',
-              value: attachment.value,
-              childAdder: childAdder,
-            );
-            break;
-
-          case AttachmentType.youtubeVideo:
-            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-              docRoot: 'youtube-doc',
-              type: 'youtube-video',
-              propKey: 'youtube-video-id',
-              contract: 'display_attachment',
-              value: attachment.value,
-              childAdder: childAdder,
-            );
-            break;
-
-          case AttachmentType.orderReceipt:
-            kEmbeddedChildProvider.buildGeneralEmbeddedChild(
-              type: 'order-receipt',
-              contract: 'interactive_receipt',
-              value: null,
-              childAdder: childAdder,
-            );
-        }
-      } catch (e) {
-        embeddedChildren.add(
-          new EmbeddedChild(
-            widgetBuilder: (_) => new Text('Error occurred while building '
-                'embedded child for attachment ${attachment.toJson()}: $e'),
-          ),
-        );
-      }
+    widget.message.links.forEach((Uri link) {
+      kEmbeddedChildProvider.buildGeneralEmbeddedChild(
+        contract: 'view',
+        initialData: <String, dynamic>{
+          'uri': link.toString(),
+          'scheme': link.scheme,
+          'host': link.host,
+          'path': link.path,
+          'query parameters': link.queryParameters,
+        },
+        childAdder: childAdder,
+      );
     });
   }
 

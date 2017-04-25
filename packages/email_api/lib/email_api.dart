@@ -267,7 +267,6 @@ class EmailAPI {
       ccList: cc,
       text: body,
       links: links,
-      attachments: _attachments(links),
     );
   }
 
@@ -326,35 +325,4 @@ String _body(gmail.Message message) {
   } else {
     return message.snippet;
   }
-}
-
-List<Attachment> _attachments(List<Uri> links) {
-  // TODO(jxson): SO-138 separate detection and extraction.
-  return links.where((Uri link) {
-    return link.host == 'www.youtube.com' ||
-        link.host == 'tools.usps.com' ||
-        link.host == 'www.aplusmobile.com';
-  }).map((Uri link) {
-    if (link.host == 'www.youtube.com' &&
-        link.path == '/watch' &&
-        link.queryParameters['v'] != null) {
-      return new Attachment(
-        type: AttachmentType.youtubeVideo,
-        value: link.queryParameters['v'],
-      );
-    } else if (link.host == 'tools.usps.com' &&
-        link.path == '/go/TrackConfirmAction' &&
-        link.queryParameters['qtc_tLabels1'] != null) {
-      return new Attachment(
-        type: AttachmentType.uspsShipping,
-        value: link.queryParameters['qtc_tLabels1'],
-      );
-    } else if (link.host == 'www.aplusmobile.com' &&
-        link.path == '/yourorder') {
-      return new Attachment(
-        type: AttachmentType.orderReceipt,
-        value: '',
-      );
-    }
-  }).toList();
 }
