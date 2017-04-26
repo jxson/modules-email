@@ -85,17 +85,18 @@ void _addEmbeddedChildBuilder() {
       // Create a new link, add necessary data to it, and create a duplicate of
       // it to be passed to the sub-module.
       LinkProxy link = new LinkProxy();
-      _module.moduleContext.createLink(type, link.ctrl.request());
+      _module.moduleContext.getLink(type, link.ctrl.request());
       if (encodedChildDoc != null) {
         link.set(<String>[docRoot], encodedChildDoc);
       }
+      link.ctrl.close();
       ModuleControllerProxy moduleController = new ModuleControllerProxy();
       InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
 
       _module.moduleContext.startModule(
         moduleUrl, // module name
         moduleUrl,
-        link.ctrl.unbind(),
+        type, // link name
         null,
         null,
         moduleController.ctrl.request(),

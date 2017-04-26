@@ -48,13 +48,13 @@ class ModuleImpl extends Module {
   @override
   void initialize(
     InterfaceHandle<ModuleContext> moduleContextHandle,
-    InterfaceHandle<Link> linkHandle,
     InterfaceHandle<ServiceProvider> incomingServices,
     InterfaceRequest<ServiceProvider> outgoingServices,
   ) {
     _log('ModuleImpl::initialize call');
     _emailModuleContextProxy.ctrl.bind(moduleContextHandle);
-    emailSessionLinkProxy.ctrl.bind(linkHandle);
+    _emailModuleContextProxy.getLink(null,
+                                     emailSessionLinkProxy.ctrl.request());
 
     // TODO(jasoncampbell): Start here.
     // TODO(alangardner): Temporarily start with mock data

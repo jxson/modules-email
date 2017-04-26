@@ -84,14 +84,13 @@ class ModuleImpl extends Module {
   @override
   void initialize(
     InterfaceHandle<ModuleContext> moduleContextHandle,
-    InterfaceHandle<Link> linkHandle,
     InterfaceHandle<ServiceProvider> incomingServices,
     InterfaceRequest<ServiceProvider> outgoingServices,
   ) {
     _log('ModuleImpl::initialize call');
 
     moduleContext.ctrl.bind(moduleContextHandle);
-    link.ctrl.bind(linkHandle);
+    moduleContext.getLink(null, link.ctrl.request());
 
     startModule(
       url: _kEmailSessionUrl,
@@ -152,7 +151,7 @@ class ModuleImpl extends Module {
     moduleContext.startModule(
       name,
       url,
-      duplicateLink(),
+      null, // Pass on our default link to our child.
       outgoingServices,
       incomingServices,
       moduleControllerPair.passRequest(),
@@ -161,13 +160,6 @@ class ModuleImpl extends Module {
     _log('Started sub-module: $url');
 
     return viewOwnerPair.passHandle();
-  }
-
-  /// Obtains a duplicated [InterfaceHandle] for the given [Link] object.
-  InterfaceHandle<Link> duplicateLink() {
-    InterfacePair<Link> linkPair = new InterfacePair<Link>();
-    link.dup(linkPair.passRequest());
-    return linkPair.passHandle();
   }
 
   /// Duplicates a [ServiceProvider] and returns its handle.

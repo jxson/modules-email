@@ -105,7 +105,6 @@ class EmailSessionModule extends Module {
   @override
   void initialize(
     InterfaceHandle<ModuleContext> moduleContextHandle,
-    InterfaceHandle<Link> linkHandle,
     InterfaceHandle<ServiceProvider> incomingServicesHandle,
     InterfaceRequest<ServiceProvider> outgoingServices,
   ) {
@@ -113,7 +112,7 @@ class EmailSessionModule extends Module {
     moduleContext.ctrl.bind(moduleContextHandle);
     _incomingServices.ctrl.bind(incomingServicesHandle);
     connectToService(_incomingServices, _emailSessionService.ctrl);
-    _emailSessionLinkProxy.ctrl.bind(linkHandle);
+    moduleContext.getLink(null, _emailSessionLinkProxy.ctrl.request());
     _setupActionRelay(_emailSessionService);
     _store = new EmailSessionLinkStore(_emailSessionLinkProxy);
     _initCallback(_emailSessionService, _store);
