@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:apps.maxwell.services.suggestion/proposal.fidl.dart';
 import 'package:apps.maxwell.services.suggestion/proposal_publisher.fidl.dart';
 import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart';
+import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.component/message_queue.fidl.dart';
 import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
@@ -48,6 +49,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
       new List<ecp.EmailContentProviderBinding>();
 
   final ComponentContextProxy _componentContext;
+  final TokenProviderProxy _tokenProvider;
   final ProposalPublisherProxy _proposalPublisher;
 
   // We keep our email state here in these completers, which act as barriers
@@ -64,7 +66,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
       new Map<String, NotificationSubscriber>();
 
   /// Constructor.
-  EmailContentProviderImpl(this._componentContext, this._proposalPublisher);
+  EmailContentProviderImpl(
+    this._componentContext,
+    this._tokenProvider,
+    this._proposalPublisher,
+  );
 
   /// Binds this implementation to the incoming [bindings.InterfaceRequest].
   ///
@@ -83,31 +89,27 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   /// Preloads the results for [me] and [labels]. Threads for each label and
   /// loaded on demand. Kicks of periodic email updates.
   Future<Null> init() async {
-    EmailAPI _api = await API.get();
+    EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
-    try {
-      User me = await _api.me();
-      List<Label> labels = await _api.labels();
+    User me = await _api.me();
+    List<Label> labels = await _api.labels();
 
-      /// load the user information; served by me()
-      String payload = JSON.encode(me);
-      _user.complete(new ecp.User.init(me.id, payload));
+    /// load the user information; served by me()
+    String payload = JSON.encode(me);
+    _user.complete(new ecp.User.init(me.id, payload));
 
-      /// load the labels; served by labels()
-      _labels.complete(labels.map((Label label) {
-        String payload = JSON.encode(label);
-        return new ecp.Label.init(label.id, payload);
-      }).toList());
-    } catch (e) {
-      _log('Email API threw an exception. Auth tokens might be missing.');
-    }
+    /// load the labels; served by labels()
+    _labels.complete(labels.map((Label label) {
+      String payload = JSON.encode(label);
+      return new ecp.Label.init(label.id, payload);
+    }).toList());
   }
 
   /// Called every [kRefreshPeriodSecs] to refresh labels. It will check for new
   /// email for each loaded labelId, and if they exist, send a notification to
   /// all interested parties (who subscribed using [registerForUpdates]).
   Future<Null> onRefresh() async {
-    EmailAPI _api = await API.get();
+    EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
     for (String labelId in _labelToThreads.keys) {
       int numEmail = await _api.fetchNewEmail(labelId: labelId);

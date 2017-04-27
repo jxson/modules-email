@@ -27,7 +27,7 @@ class EmailAPI {
   /// Google OAuth scopes.
   List<String> scopes;
   Client _baseClient;
-  AutoRefreshingAuthClient _client;
+  AuthClient _client;
   gmail.GmailApi _gmail;
 
   // TODO(vardhan): Do we need to track separate historyIds per-label?
@@ -36,24 +36,23 @@ class EmailAPI {
   /// The [EmailAPI] constructor.
   EmailAPI({
     @required String id,
-    @required String secret,
+    String secret,
     @required String token,
     @required DateTime expiry,
-    @required String refreshToken,
+    String refreshToken,
     @required this.scopes,
   }) {
     assert(id != null);
-    assert(secret != null);
     assert(token != null);
     assert(expiry != null);
-    assert(refreshToken != null);
+    assert(scopes != null);
 
     ClientId clientId = new ClientId(id, secret);
     AccessToken accessToken = new AccessToken('Bearer', token, expiry);
     AccessCredentials credentials =
         new AccessCredentials(accessToken, refreshToken, scopes);
     _baseClient = new Client();
-    _client = autoRefreshingClient(clientId, credentials, _baseClient);
+    _client = authenticatedClient(_baseClient, credentials);
     _gmail = new gmail.GmailApi(_client);
   }
 

@@ -11,6 +11,7 @@ dart_app("content_provider") {
     "//application/lib/app/dart",
     "//application/services:services_dart",
     "//apps/maxwell/services/suggestion:suggestion_dart",
+    "//apps/modular/services/auth:auth_dart",
     "//apps/modular/services/agent:agent_dart",
     "//apps/modules/common/packages/models",
     "//apps/modules/email/packages/email_api",

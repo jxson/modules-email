@@ -9,6 +9,7 @@ import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.maxwell.services.suggestion/proposal_publisher.fidl.dart';
 import 'package:apps.modular.services.agent/agent.fidl.dart';
 import 'package:apps.modular.services.agent/agent_context.fidl.dart';
+import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
     as ecp;
@@ -26,6 +27,7 @@ class EmailContentProviderAgent extends Agent {
   // ignore: unused_field
   AgentBinding _agentBinding;
   ComponentContextProxy _componentContext;
+  TokenProviderProxy _tokenProvider;
 
   /// Provides the [EmailContentProvider] service.
   /// TODO(vardhan): A ServiceProviderImpl should suport multiple bindings.
@@ -53,12 +55,18 @@ class EmailContentProviderAgent extends Agent {
     _componentContext = new ComponentContextProxy();
     agentContext.getComponentContext(_componentContext.ctrl.request());
 
+    _tokenProvider = new TokenProviderProxy();
+    agentContext.getTokenProvider(_tokenProvider.ctrl.request());
+
     // Get the ProposalPublisher
     ProposalPublisherProxy proposalPublisher = new ProposalPublisherProxy();
     connectToService(_context.environmentServices, proposalPublisher.ctrl);
 
-    _emailContentProviderImpl =
-        new EmailContentProviderImpl(_componentContext, proposalPublisher);
+    _emailContentProviderImpl = new EmailContentProviderImpl(
+      _componentContext,
+      _tokenProvider,
+      proposalPublisher,
+    );
 
     _outgoingServicesImpl.addServiceForName(
         (InterfaceRequest<ecp.EmailContentProvider> request) async {
@@ -94,6 +102,7 @@ class EmailContentProviderAgent extends Agent {
   @override
   void stop(void callback()) {
     _emailContentProviderImpl.close();
+    _tokenProvider.ctrl.close();
     _outgoingServicesBindings
         .forEach((ServiceProviderBinding binding) => binding.close());
     callback();
