@@ -53,9 +53,7 @@ class ArchiveDismissibleBackground extends StatelessWidget {
     }
 
     return new Container(
-      decoration: new BoxDecoration(
-        backgroundColor: Colors.green[500],
-      ),
+      color: Colors.green[500],
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: backgroundChildren,

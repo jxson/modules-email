@@ -29,7 +29,7 @@ class EmailQuarterbackModule extends StatelessWidget {
         child: new Container(
           alignment: FractionalOffset.topCenter,
           constraints: new BoxConstraints.loose(new Size.fromWidth(400.0)),
-          decoration: new BoxDecoration(backgroundColor: Colors.white),
+          color: Colors.white,
           child: new EmailListScreen(),
         ),
       ),
