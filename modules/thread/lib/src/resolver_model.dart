@@ -5,6 +5,7 @@
 import 'dart:convert';
 
 import 'package:application.lib.app.dart/app.dart';
+import 'package:apps.maxwell.lib.dart/decomposition.dart';
 import 'package:apps.maxwell.services.resolver/resolver.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.module/module_controller.fidl.dart';
@@ -102,17 +103,9 @@ class ModularResolverModel extends ResolverModel {
     _log('resolving module for "$uri"');
 
     String contract = 'view';
-    Map<String, dynamic> json = <String, dynamic>{
-      'uri': uri.toString(),
-      'scheme': uri.scheme,
-      'host': uri.host,
-      'path': uri.path,
-      'query parameters': uri.queryParameters,
-    };
+    String data = JSON.encode(decomposeUri(uri));
 
     requests[id] = new ModuleRequest();
-
-    String data = JSON.encode(json);
 
     resolver.resolveModules(contract, data, (List<ModuleInfo> modules) async {
       ModuleInfo module = modules[0];

@@ -9,9 +9,10 @@ dart_package("email_widgets") {
   package_name = "email_widgets"
 
   deps = [
+    "//apps/maxwell/lib/dart",
     "//apps/modules/common/packages/models",
-    "//apps/modules/common/packages/widgets_meta",
     "//apps/modules/common/packages/widgets",
+    "//apps/modules/common/packages/widgets_meta",
     "//apps/modules/email/packages/email_models",
     "//lib/flutter/packages/flutter",
     "//lib/widgets/packages/widgets:lib.widgets",
