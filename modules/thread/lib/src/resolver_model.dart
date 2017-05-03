@@ -14,6 +14,7 @@ import 'package:apps.mozart.services.views/view_token.fidl.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.fidl.dart/bindings.dart';
+import 'package:lib.widgets/modular.dart';
 import 'package:meta/meta.dart';
 
 const double _kHeight = 800.0;
@@ -27,8 +28,9 @@ class ModularResolverModel extends ResolverModel {
   /// Needed to launch the resolver with
   final ApplicationContext context;
 
-  /// [ModuleContext] service provided by the framework.
-  final ModuleContextProxy moduleContext = new ModuleContextProxy();
+  /// The enclosing [ModuleModel] instance from which the [ModuleContext] can be
+  /// obtained.
+  final ModuleModel moduleModel;
 
   /// [Resolver] proxy.
   final ResolverProxy resolver = new ResolverProxy();
@@ -39,6 +41,7 @@ class ModularResolverModel extends ResolverModel {
   /// [ModularResolverModel] Constructor.
   ModularResolverModel({
     @required this.context,
+    @required this.moduleModel,
   }) {
     connectToService(context.environmentServices, resolver.ctrl);
   }
@@ -111,7 +114,7 @@ class ModularResolverModel extends ResolverModel {
 
     String data = JSON.encode(json);
 
-    resolver.resolveModules(contract, data, (List<ModuleInfo> modules) {
+    resolver.resolveModules(contract, data, (List<ModuleInfo> modules) async {
       ModuleInfo module = modules[0];
 
       if (module == null) {
@@ -120,8 +123,10 @@ class ModularResolverModel extends ResolverModel {
         return;
       }
 
+      await moduleModel.ready;
+
       LinkProxy link = new LinkProxy();
-      moduleContext.getLink(contract, link.ctrl.request());
+      moduleModel.moduleContext.getLink(contract, link.ctrl.request());
       if (data != null) {
         link.set(<String>[contract], data);
       }
@@ -151,7 +156,7 @@ class ModularResolverModel extends ResolverModel {
         new InterfacePair<ModuleController>();
     String name = url;
 
-    moduleContext.startModule(
+    moduleModel.moduleContext.startModule(
       name,
       url,
       contract,

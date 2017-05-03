@@ -18,16 +18,19 @@ void main() {
   ApplicationContext applicationContext =
       new ApplicationContext.fromStartupInfo();
 
+  EmailSessionModuleModel moduleModel = new EmailSessionModuleModel(
+    fluxStore: fluxStore,
+    name: 'thread',
+  );
+
   ModuleWidget<EmailSessionModuleModel> moduleWidget =
       new ModuleWidget<EmailSessionModuleModel>(
     applicationContext: applicationContext,
-    moduleModel: new EmailSessionModuleModel(
-      fluxStore: fluxStore,
-      name: 'thread',
-    ),
+    moduleModel: moduleModel,
     child: new ScopedModel<ResolverModel>(
       model: new ModularResolverModel(
         context: applicationContext,
+        moduleModel: moduleModel,
       ),
       child: new EmailThreadScreen(
         token: token,
