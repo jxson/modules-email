@@ -52,7 +52,7 @@ class EmailStoryScreen extends StatelessWidget {
       child: new Container(
         padding: new EdgeInsets.symmetric(horizontal: 4.0),
         child: new Material(
-          elevation: 2,
+          elevation: 2.0,
           child: storyModel.threadListConnection != null
               ? new ChildView(connection: storyModel.threadListConnection)
               : new Container(),
