@@ -10,7 +10,8 @@ import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.module/module.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
+import 'package:apps.modules.email.services.email/email_session.fidl.dart'
+    as es;
 import 'package:flutter/material.dart';
 import 'package:lib.fidl.dart/bindings.dart';
 

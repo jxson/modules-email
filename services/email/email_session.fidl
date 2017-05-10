@@ -5,6 +5,7 @@
 module email_session;
 
 // Message struct used for expanding/closing messages.
+// TODO(SO-390): Remove this duplicated struct when services are refactored.
 struct Message {
   string id;
   string threadId;
@@ -24,4 +25,9 @@ interface EmailSession {
 
   // Close a message.
   CloseMessage(Message message);
+
+  // Start the email composition module with an the initial message value.
+  // TODO(SO-390): Add the initial message and the updated message when
+  // services get refactored.
+  ComposeMessage();
 };

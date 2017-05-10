@@ -6,7 +6,7 @@ import 'package:apps.mozart.lib.flutter/child_view.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/model.dart';
 
-import 'module_model.dart';
+import 'modular/module_model.dart';
 
 /// Top-level widget for email_story.
 class EmailStoryScreen extends StatelessWidget {
@@ -63,11 +63,20 @@ class EmailStoryScreen extends StatelessWidget {
 
   /// Build the thread view on the right.
   Widget detail(BuildContext context, EmailStoryModuleModel storyModel) {
+    // TODO: animate transition.
+    Widget child;
+
+    if (storyModel.composerConnection != null) {
+      child = new ChildView(connection: storyModel.composerConnection);
+    } else {
+      child = storyModel.threadConnection != null
+          ? new ChildView(connection: storyModel.threadConnection)
+          : new Container();
+    }
+
     return new Expanded(
       flex: 4,
-      child: storyModel.threadConnection != null
-          ? new ChildView(connection: storyModel.threadConnection)
-          : new Container(),
+      child: child,
     );
   }
 }

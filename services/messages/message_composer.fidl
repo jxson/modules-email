@@ -1,0 +1,27 @@
+// Copyright 2017 The Fuchsia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module email;
+
+import "apps/modules/email/services/messages/message.fidl";
+
+// The MessageComposer interface is exposed by the email composition module
+// allowing clients to be notified of signals from the UI elements so they can
+// respons accordingly.
+[ServiceName="email.Composer"]
+interface MessageComposer {
+  // Add a MessageListener for events triggered by the email composition
+  // module.
+  AddMessageListener(MessageListener listener);
+};
+
+// The MessageListener should be used by clients of MessageComposer to listen
+// to updates.
+interface MessageListener {
+  // When a message done being composed and is submitted.
+  OnSubmitted(Message message);
+
+  // When a message is updated.
+  OnChanged(Message message);
+};

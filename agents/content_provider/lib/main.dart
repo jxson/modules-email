@@ -11,7 +11,7 @@ import 'package:apps.modular.services.agent/agent.fidl.dart';
 import 'package:apps.modular.services.agent/agent_context.fidl.dart';
 import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:apps.modular.services.component/component_context.fidl.dart';
-import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
+import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
 import 'package:lib.fidl.dart/bindings.dart';
 

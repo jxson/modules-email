@@ -1,0 +1,17 @@
+// Copyright 2017 The Fuchsia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module email;
+
+// Email message struct. Properties except got the JSON field are defined by
+// the Gmail REST API https://goo.gl/UtcrzE.
+struct Message {
+  // The ID of the message.
+  string? id;
+  // The ID of the thread this message belongs to.
+  string? threadId;
+  // JSON encoded string content controlled by the Message model defined in
+  // "packages/email_models/lib/src/message.dart".
+  string json;
+};

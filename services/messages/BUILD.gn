@@ -4,9 +4,9 @@
 
 import("//lib/fidl/fidl.gni")
 
-group("services") {
-  deps = [
-    "email",
-    "messages",
+fidl("messages") {
+  sources = [
+    "message.fidl",
+    "message_composer.fidl",
   ]
 }

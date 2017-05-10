@@ -11,7 +11,7 @@ import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart';
 import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.component/message_queue.fidl.dart';
-import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
+import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
 import 'package:email_api/email_api.dart';
 import 'package:email_models/models.dart';

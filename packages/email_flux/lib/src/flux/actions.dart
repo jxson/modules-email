@@ -24,4 +24,9 @@ class EmailFluxActions {
 
   /// Move a thread to the trash.
   static final Action<Thread> trashThread = new Action<Thread>();
+
+  /// Trigger to launch the email composition module populated with the
+  /// [Message]'s values (to, cc, subject, etc.). Called in the thread_list
+  /// module when a user taps the FAB.
+  static final Action<Message> composeMessage = new Action<Message>();
 }

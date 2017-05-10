@@ -8,7 +8,8 @@ import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
+import 'package:apps.modules.email.services.email/email_session.fidl.dart'
+    as es;
 import 'package:email_flux/document.dart';
 import 'package:email_flux/flux.dart';
 import 'package:email_models/models.dart';
@@ -63,6 +64,7 @@ class EmailSessionModuleModel extends ModuleModel {
     EmailFluxActions.selectThread.listen(handleSelectedThread);
     EmailFluxActions.expandMessage.listen(handleMessageExpanded);
     EmailFluxActions.closeMessage.listen(handleMessageClosed);
+    EmailFluxActions.composeMessage.listen(handleComposeMessage);
 
     notifyListeners();
   }
@@ -78,6 +80,13 @@ class EmailSessionModuleModel extends ModuleModel {
     service.ctrl.close();
 
     super.onStop();
+  }
+
+  /// Tell the email session to launch the email composition module.
+  void handleComposeMessage(Message message) {
+    // Ignore the message for now.
+    // TODO(SO-390): Add the message when the the services get refactored.
+    service.composeMessage();
   }
 
   /// Use the email session service to expand the message.

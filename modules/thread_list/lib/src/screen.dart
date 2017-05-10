@@ -20,27 +20,44 @@ class EmailThreadListScreen extends StoreWatcher {
   /// Create a new [EmailThreadListScreen] instance.
   EmailThreadListScreen({
     Key key,
-    // NOTE: This causes a flicker when loading, it should only show title when
-    // it's available, and show the spinner in the list area.
-    this.fallbackTitle: '',
     this.token,
-  })
-      : super(key: key) {
-    assert(fallbackTitle != null);
-  }
-
-  /// Header Title for this view
-  final String fallbackTitle;
+  });
 
   @override
   void initStores(ListenToStore listenToStore) {
     listenToStore(token);
   }
 
+  /// When the FAB is pressed notify Flux listeners to compose a new, empty
+  /// message.
+  void handleFabPressed() {
+    EmailFluxActions.composeMessage(new Message());
+  }
+
   @override
   Widget build(BuildContext context, Map<StoreToken, Store> stores) {
     final EmailFluxStore fluxStore = stores[token];
 
+    return new Scaffold(
+      // TODO(SO-424): Use email spec compliant colors and sizing.
+      appBar: new AppBar(
+        title: new Text(
+          fluxStore.focusedLabel?.name ?? '',
+          style: new TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+      ),
+      body: buildBody(context, fluxStore),
+      floatingActionButton: new FloatingActionButton(
+        onPressed: handleFabPressed,
+        tooltip: 'Draft a new message.',
+        child: new Icon(Icons.create),
+      ),
+    );
+  }
+
+  /// Build the body of the thread list view.
+  Widget buildBody(BuildContext context, EmailFluxStore fluxStore) {
     if (fluxStore.fetchingThreads) {
       return new Center(child: new CircularProgressIndicator());
     }
@@ -60,45 +77,8 @@ class EmailThreadListScreen extends StoreWatcher {
       return lastB.timestamp.compareTo(lastA.timestamp);
     });
 
-    Widget threadList = new ListView(
+    return new ListView(
       children: threads.map((Thread t) => buildListItem(t, fluxStore)).toList(),
-    );
-
-    // TODO(dayang): Use theme data
-    // https://fuchsia.atlassian.net/browse/SO-43
-    return new Material(
-      child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          new Container(
-            height: _kInboxHeaderHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            decoration: new BoxDecoration(
-              border: new Border(
-                bottom: new BorderSide(
-                  color: Colors.grey[200],
-                  width: 1.0,
-                ),
-              ),
-            ),
-            child: new Row(
-              children: <Widget>[
-                new Text(
-                  fluxStore.focusedLabel?.name ?? fallbackTitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: new TextStyle(
-                    fontSize: 18.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          new Expanded(
-            flex: 1,
-            child: threadList,
-          ),
-        ],
-      ),
     );
   }
 

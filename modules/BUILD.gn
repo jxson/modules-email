@@ -4,6 +4,8 @@
 
 group("modules") {
   deps = [
+    "composer",
+    "composer:composer_component",
     "nav",
     "nav:nav_component",
     "session",

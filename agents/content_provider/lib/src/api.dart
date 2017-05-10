@@ -21,6 +21,7 @@ class API {
     return _api;
   }
 
+  /// Async getter/loader.
   static Future<EmailAPI> fromTokenProvider(
     TokenProviderProxy tokenProvider,
   ) async {
@@ -32,12 +33,15 @@ class API {
         id: await _clientIdCompleter.future,
         token: await _accessTokenCompleter.future,
         expiry: new DateTime.now().add(new Duration(hours: 1)).toUtc(),
-        scopes: ['openid', 'email',
-        'https://www.googleapis.com/auth/gmail.modify',
-        'https://www.googleapis.com/auth/assistant',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/contacts',
-        'https://www.googleapis.com/auth/plus.login',]);
+        scopes: <String>[
+          'openid',
+          'email',
+          'https://www.googleapis.com/auth/gmail.modify',
+          'https://www.googleapis.com/auth/assistant',
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'https://www.googleapis.com/auth/contacts',
+          'https://www.googleapis.com/auth/plus.login',
+        ]);
   }
 }

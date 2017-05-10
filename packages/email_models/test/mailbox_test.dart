@@ -4,10 +4,28 @@
 
 import 'dart:convert';
 
+import 'package:email_models/fixtures.dart';
 import 'package:email_models/models.dart';
 import 'package:test/test.dart';
 
 void main() {
+  EmailFixtures fixtures = new EmailFixtures();
+
+  test('Mailbox JSON encode/decode', () {
+    User user = fixtures.user();
+    Mailbox mailbox = new Mailbox(
+      address: user.email,
+      displayName: user.name,
+    );
+    String encoded = JSON.encode(mailbox);
+    Map<String, dynamic> json = JSON.decode(encoded);
+    Mailbox hydrated = new Mailbox.fromJson(json);
+
+    expect(hydrated.address, isNotNull);
+    expect(hydrated.address, mailbox.address);
+    expect(hydrated.displayName, mailbox.displayName);
+  });
+
   test('fromString() should correctly parse the string into a Mailbox', () {
     <String>[
       'John Doe <john.doe@example.com>',
