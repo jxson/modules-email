@@ -21,7 +21,7 @@ final TextStyle _kLabelStyle = new TextStyle(
   color: Colors.grey[700],
 );
 
-const TextStyle _kInputStyle = const TextStyle(
+final TextStyle _kInputStyle = new TextStyle(
   fontSize: 16.0,
   color: Colors.black,
 );

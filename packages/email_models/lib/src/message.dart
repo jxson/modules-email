@@ -82,6 +82,8 @@ class Message {
 
   /// Create a message from JSON.
   factory Message.fromJson(Map<String, dynamic> json) {
+    if (json == null) return new Message();
+
     Iterable<Uri> links = json['links']?.map((String link) => Uri.parse(link));
 
     Iterable<Attachment> attachments = json['attachments']
@@ -118,7 +120,7 @@ class Message {
     Map<String, dynamic> json = <String, dynamic>{
       'id': id,
       'threadId': threadId,
-      'sender': sender.toJson(),
+      'sender': sender?.toJson(),
       'senderProfileUrl': senderProfileUrl,
       'subject': subject,
       'text': text,

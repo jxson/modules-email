@@ -5,29 +5,28 @@
 import("//build/component/component.gni")
 import("//flutter/build/flutter_app.gni")
 
-# TODO(#SO-349): Use dart_app template since this module does not render UI.
-flutter_app("session") {
-  source_dir = "lib"
+flutter_app("composer") {
   main_dart = "lib/main.dart"
 
   deps = [
     "//application/lib/app/dart",
     "//application/services:services_dart",
-    "//apps/modular/services/module:module_dart",
     "//apps/modular/services/story:story_dart",
     "//apps/modules/email/packages/email_composer",
-    "//apps/modules/email/packages/email_session",
-    "//apps/modules/email/services/email:email_dart",
+    "//apps/modules/email/packages/email_models",
+    "//apps/modules/email/packages/email_widgets",
+    "//apps/modules/email/services/messages:messages_dart",
     "//apps/mozart/lib/flutter",
     "//apps/mozart/services/views:views_dart",
     "//lib/fidl/dart",
+    "//lib/flutter/packages/flutter",
     "//lib/widgets/packages/widgets:lib.widgets",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"
 }
 
-fuchsia_component("session_component") {
-  manifest = "session_component.json"
-  flutter_program = ":session"
+fuchsia_component("composer_component") {
+  manifest = "component.json"
+  flutter_program = ":composer"
 }

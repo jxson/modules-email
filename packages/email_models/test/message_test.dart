@@ -10,6 +10,31 @@ import 'package:test/test.dart';
 void main() {
   EmailFixtures fixtures = new EmailFixtures();
 
+  test('Message JSON encode/decode - simple', () {
+    Message message = new Message();
+    String encoded = JSON.encode(message);
+    Map<String, dynamic> json = JSON.decode(encoded);
+    Message hydrated = new Message.fromJson(json);
+
+    expect(hydrated.id, isNull);
+    expect(hydrated.threadId, isNull);
+    expect(hydrated.sender, isNull);
+    expect(hydrated.senderProfileUrl, isNull);
+    expect(hydrated.subject, isNull);
+    expect(hydrated.text, isNull);
+    expect(hydrated.timestamp, isNull);
+    expect(hydrated.isRead, isNull);
+    expect(hydrated.links, isEmpty);
+    expect(hydrated.recipientList, isEmpty);
+    expect(hydrated.ccList, isEmpty);
+    expect(hydrated.attachments, isEmpty);
+    expect(
+      hydrated.expanded,
+      false,
+      reason: 'message.expanded should be false',
+    );
+  });
+
   test('Message JSON encode/decode', () {
     Message message = fixtures.message();
     String encoded = JSON.encode(message);

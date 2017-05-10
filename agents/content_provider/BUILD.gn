@@ -11,12 +11,12 @@ dart_app("content_provider") {
     "//application/lib/app/dart",
     "//application/services:services_dart",
     "//apps/maxwell/services/suggestion:suggestion_dart",
-    "//apps/modular/services/auth:auth_dart",
     "//apps/modular/services/agent:agent_dart",
+    "//apps/modular/services/auth:auth_dart",
     "//apps/modules/common/packages/models",
     "//apps/modules/email/packages/email_api",
     "//apps/modules/email/packages/email_models",
-    "//apps/modules/email/services:services_dart",
+    "//apps/modules/email/services/email:email_dart",
     "//lib/fidl/dart",
   ]
 }

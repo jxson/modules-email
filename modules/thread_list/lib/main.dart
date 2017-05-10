@@ -31,7 +31,7 @@ void main() {
   runApp(new MaterialApp(
     title: 'Email Thread List Module',
     home: moduleWidget,
-    theme: new ThemeData(primarySwatch: Colors.blue),
+    theme: new ThemeData(primarySwatch: Colors.red),
     debugShowCheckedModeBanner: false,
   ));
 }

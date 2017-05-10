@@ -11,13 +11,14 @@ dart_package("email_session") {
   deps = [
     "//application/lib/app/dart",
     "//application/services:services_dart",
+    "//apps/maxwell/services/resolver:resolver_dart",
     "//apps/modular/services/module:module_dart",
     "//apps/modular/services/story:story_dart",
     "//apps/modules/common/packages/fixtures",
     "//apps/modules/common/packages/models",
-    "//apps/modules/email/packages/email_models",
     "//apps/modules/email/packages/email_flux",
-    "//apps/modules/email/services:services_dart",
+    "//apps/modules/email/packages/email_models",
+    "//apps/modules/email/services/email:email_dart",
     "//apps/mozart/lib/flutter",
     "//lib/fidl/dart",
     "//lib/flutter/packages/flutter",
@@ -25,7 +26,6 @@ dart_package("email_session") {
     "//third_party/dart-pkg/pub/flutter_flux",
     "//third_party/dart-pkg/pub/googleapis",
     "//third_party/dart-pkg/pub/quiver",
-    "//apps/maxwell/services/resolver:resolver_dart",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"

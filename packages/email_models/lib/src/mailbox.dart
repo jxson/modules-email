@@ -52,6 +52,8 @@ class Mailbox {
 
   /// Create an instance from JSON.
   factory Mailbox.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
+
     return new Mailbox(
       displayName: json['name'],
       address: json['email'],

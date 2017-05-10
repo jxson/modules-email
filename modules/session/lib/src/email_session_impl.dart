@@ -10,9 +10,11 @@ import 'package:apps.modular.services.agent.agent_controller/agent_controller.fi
 import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.component/message_queue.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:apps.modules.email.services/email_content_provider.fidl.dart'
+import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
-import 'package:apps.modules.email.services/email_session.fidl.dart' as es;
+import 'package:apps.modules.email.services.email/email_session.fidl.dart'
+    as es;
+import 'package:email_composer/document.dart';
 import 'package:email_flux/document.dart';
 import 'package:email_models/models.dart';
 import 'package:lib.fidl.dart/bindings.dart' hide Message;
@@ -151,6 +153,15 @@ class EmailSessionImpl extends es.EmailSession {
 
     // Continue to receive more updates.
     _notificationQueue.receive(_onEmailNotification);
+  }
+
+  @override
+  void composeMessage() {
+    _log(
+        'EmailSession#ComposeMessage() => updating link for the story module.');
+    EmailComposerDocument doc = new EmailComposerDocument();
+    String data = JSON.encode(doc);
+    link.updateObject(EmailComposerDocument.path, data);
   }
 
   @override
