@@ -47,7 +47,6 @@ class EmailAPI {
     assert(expiry != null);
     assert(scopes != null);
 
-    ClientId clientId = new ClientId(id, secret);
     AccessToken accessToken = new AccessToken('Bearer', token, expiry);
     AccessCredentials credentials =
         new AccessCredentials(accessToken, refreshToken, scopes);
