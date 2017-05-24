@@ -17,6 +17,7 @@ dart_package("email_composer") {
 
 dart_test("test") {
   deps = [
+    "//apps/modules/email/packages/email_composer",
     "//apps/modules/email/packages/email_models",
     "//lib/flutter/packages/flutter_test",
     "//third_party/dart-pkg/pub/test",
