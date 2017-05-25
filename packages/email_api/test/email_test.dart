@@ -21,11 +21,6 @@ void main() {
     );
   });
 
-  test('api = await EmailAPI.fromConfig(...)', () async {
-    EmailAPI api = await EmailAPI.fromConfig('assets/config.json');
-    expect(api, isNotNull);
-  }, skip: 'No config in tests.');
-
   test('api.labels()', () async {
     List<Label> labels = await api.labels();
     labels.forEach((Label label) {

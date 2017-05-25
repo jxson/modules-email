@@ -9,7 +9,6 @@ dart_package("email_api") {
   package_name = "email_api"
 
   deps = [
-    "//apps/modules/common/packages/config",
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/util",
     "//apps/modules/email/packages/email_models",

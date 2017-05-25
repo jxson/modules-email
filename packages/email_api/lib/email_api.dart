@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:config/config.dart';
 import 'package:email_models/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:googleapis/oauth2/v2.dart' as oauth;
@@ -53,28 +52,6 @@ class EmailAPI {
     _baseClient = new Client();
     _client = authenticatedClient(_baseClient, credentials);
     _gmail = new gmail.GmailApi(_client);
-  }
-
-  /// Create an instance of [EmailAPI] by loading a config file.
-  static Future<EmailAPI> fromConfig(String src) async {
-    Config config = await Config.read(src);
-
-    List<String> keys = <String>[
-      'oauth_id',
-      'oauth_secret',
-      'oauth_token',
-      'oauth_token_expiry',
-      'oauth_refresh_token',
-    ];
-    config.validate(keys);
-
-    return new EmailAPI(
-        id: config.get('oauth_id'),
-        secret: config.get('oauth_secret'),
-        token: config.get('oauth_token'),
-        expiry: DateTime.parse(config.get('oauth_token_expiry')),
-        refreshToken: config.get('oauth_refresh_token'),
-        scopes: config.scopes);
   }
 
   /// Get the logged in [User] object from [Oauth2Api].

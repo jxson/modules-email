@@ -6,8 +6,6 @@ name: email_api
 dependencies:
   flutter:
     sdk: flutter
-  config_flutter:
-    path: ../../../common/packages/config_flutter
   googleapis: ^0.32.0
   googleapis_auth: ^0.2.3
   email_models:
