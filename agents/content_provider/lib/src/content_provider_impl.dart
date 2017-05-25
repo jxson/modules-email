@@ -21,7 +21,7 @@ import 'package:models/user.dart';
 import 'api.dart';
 
 /// Period at which we check for new email.
-const int kRefreshPeriodSecs = 10;
+const int kRefreshPeriodSecs = 60;
 
 void _log(String msg) {
   print('[email_content_provider] $msg');
