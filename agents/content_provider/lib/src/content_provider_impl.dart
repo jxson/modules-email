@@ -142,7 +142,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   Future<Null> _fetchThreads(String labelId, int max) async {
     _labelToThreads[labelId] = new Completer<List<Thread>>();
-    EmailAPI _api = await API.get();
+    EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
     List<Thread> threads = await _api.threads(labelId: labelId, max: max);
 
