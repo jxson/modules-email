@@ -3,27 +3,18 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:email_flux/flux.dart';
-import 'package:email_session/client.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/modular.dart';
 
+import 'src/modular/module_model.dart';
 import 'src/screen.dart';
 
 void main() {
-  EmailFluxStore fluxStore = new EmailFluxStore();
-  StoreToken token = new StoreToken(fluxStore);
-
-  ModuleWidget<EmailSessionModuleModel> moduleWidget =
-      new ModuleWidget<EmailSessionModuleModel>(
+  ModuleWidget<EmailThreadListModuleModel> moduleWidget =
+      new ModuleWidget<EmailThreadListModuleModel>(
     applicationContext: new ApplicationContext.fromStartupInfo(),
-    moduleModel: new EmailSessionModuleModel(
-      name: 'thread_list',
-      fluxStore: fluxStore,
-    ),
-    child: new EmailThreadListScreen(
-      token: token,
-    ),
+    moduleModel: new EmailThreadListModuleModel(),
+    child: new EmailThreadListScreen(),
   );
 
   moduleWidget.advertise();

@@ -16,7 +16,7 @@ group("test") {
   deps = [
     "//apps/modules/email/packages/email_api:test",
     "//apps/modules/email/packages/email_composer:test",
-    "//apps/modules/email/packages/email_flux:test",
+    "//apps/modules/email/packages/email_link:test",
     "//apps/modules/email/packages/email_models:test",
     "//apps/modules/email/packages/email_widgets:test",
   ]

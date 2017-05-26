@@ -16,13 +16,9 @@ dependencies:
     path: ../../../../../lib/widgets/packages/widgets
   email_models:
     path: ../email_models
-  email_session:
-    path: ../email_session
   models:
     path: ../../../common/packages/models
   quiver: ^0.24.0
-  flutter_flux:
-    path: ../../../../../third_party/dart-pkg/pub/flutter_flux
 
 dev_dependencies:
   test: any

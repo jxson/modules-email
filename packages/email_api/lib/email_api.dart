@@ -68,7 +68,7 @@ class EmailAPI {
   }
 
   /// Get a [Label] from the Gmail REST API.
-  Future<Label> _label(String id) async {
+  Future<Label> label(String id) async {
     assert(id != null);
 
     gmail.Label label = await _gmail.users.labels.get('me', id);
@@ -104,7 +104,7 @@ class EmailAPI {
     gmail.ListLabelsResponse response = await _gmail.users.labels.list('me');
     Iterable<Future<Label>> requests = response.labels.map((gmail.Label label) {
       return new Future<Label>(() async {
-        return await this._label(label.id);
+        return await this.label(label.id);
       });
     });
 
@@ -137,7 +137,7 @@ class EmailAPI {
   }
 
   /// Get a [Thread] from the Gmail REST API.
-  Future<Thread> _thread(String id) async {
+  Future<Thread> thread(String id) async {
     gmail.Thread t = await _gmail.users.threads.get('me', id);
     Map<String, Message> messages = <String, Message>{};
 
@@ -189,7 +189,7 @@ class EmailAPI {
     Iterable<Future<Thread>> requests =
         response.threads.map((gmail.Thread thread) {
       return new Future<Thread>(() async {
-        return await this._thread(thread.id);
+        return await this.thread(thread.id);
       });
     });
 

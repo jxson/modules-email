@@ -64,12 +64,6 @@ class EmailStoryModuleModel extends ModuleModel {
   ) {
     super.onReady(moduleContext, link, incomingServices);
 
-    // Starting EmailSession Module.
-    startModule(
-      url: _kEmailSessionUrl,
-      incomingServices: emailSessionProvider.ctrl.request(),
-    );
-
     // Launch modules that will be embedded.
     _navConnection = new ChildViewConnection(
       startModule(
@@ -94,11 +88,12 @@ class EmailStoryModuleModel extends ModuleModel {
 
   @override
   void onNotify(String data) {
-    // Should this be the default behavior?
     if (data == null) return;
 
-    print('story - link updated');
-
+    /// Uses the link update as a way to detect if the email composition
+    /// module should be launched.
+    ///
+    /// TODO(SO-467): use story shell API's to launch email modules.
     String key = EmailComposerDocument.docroot;
     Map<String, dynamic> json = JSON.decode(data);
     if (json != null && json.containsKey(key)) {
@@ -134,7 +129,7 @@ class EmailStoryModuleModel extends ModuleModel {
     moduleContext.startModule(
       name,
       url,
-      null, // Pass on our default link to our child.
+      null, // Pass the stories default link to child modules.
       outgoingServices,
       incomingServices,
       moduleControllerPair.passRequest(),

@@ -2,58 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:email_flux/flux.dart';
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
-import 'package:meta/meta.dart';
+import 'package:lib.widgets/model.dart';
+import 'package:lib.widgets/widgets.dart';
+
+import 'modular/module_model.dart';
 
 /// An email menu/folder screen that shows a list of folders.
-class EmailNavScreen extends StoreWatcher {
-  /// The Flux StoreToken this screen uses for UI state.
-  final StoreToken token;
-
-  /// Creates a new [EmailNavScreen] instance
-  EmailNavScreen({
-    Key key,
-    @required this.token,
-  })
-      : super(key: key);
-
+class EmailNavScreen extends StatelessWidget {
   @override
-  void initStores(ListenToStore listenToStore) {
-    listenToStore(token);
+  Widget build(BuildContext context) {
+    // TODO(SO-424): Use email spec compliant colors and sizing
+    return new Material(
+        color: Colors.white,
+        child: new ScopedModelDescendant<EmailNavModuleModel>(builder: (
+          BuildContext context,
+          Widget child,
+          EmailNavModuleModel model,
+        ) {
+          return new ListView(
+            children: <Widget>[
+              buildUser(context, model.user),
+              buildList(context, model),
+            ],
+          );
+        }));
   }
 
-  @override
-  Widget build(BuildContext context, Map<StoreToken, Store> stores) {
-    EmailFluxStore fluxStore = stores[token];
+  /// Build the [User]'s card, if the user is null show a spinner.
+  Widget buildUser(BuildContext context, User user) {
+    Widget avatar = user != null
+        ? new Alphatar.fromNameAndUrl(
+            name: user.name,
+            avatarUrl: user.picture,
+            size: 40.0,
+          )
+        : new Container(
+            width: 40.0,
+            height: 40.0,
+            child: new CircularProgressIndicator(),
+          );
 
-    // Negotiate readiness [fluxStore] values (populated via Link content). It's
-    // possible for the fluxStore.user value to be null when the the store is
-    // first initialized. It might take a while for dependent modules to be in a
-    // state to grab the needed values and assign a user.
-    bool isFetching = fluxStore.fetchingUser || fluxStore.fetchingLabels;
-    if (isFetching || fluxStore.user == null) {
-      return new Center(child: new CircularProgressIndicator());
-    }
+    Widget title = user != null
+        ? new Text(
+            user.name,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+          )
+        : new Text('');
 
-    if (fluxStore.errors.isNotEmpty) {
-      return new Errors(
-        errors: fluxStore.errors,
-      );
-    }
+    Widget subtitle = user != null
+        ? new Text(
+            user.email,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+          )
+        : new Text('');
 
-    LabelGroup primaryLabels = new LabelGroup(
-      labels: fluxStore.labels.values.toList(),
+    return new Container(
+      alignment: FractionalOffset.centerLeft,
+      height: 73.0,
+      child: new ListTile(
+        leading: avatar,
+        title: title,
+        subtitle: subtitle,
+      ),
     );
+  }
 
-    return new LabelList(
-      labelGroups: <LabelGroup>[primaryLabels],
-      onSelectLabel: EmailFluxActions.selectLabel,
-      selectedLabel: fluxStore.focusedLabel,
-      user: fluxStore.user,
+  /// Build the list of [Label]s, if the user is null show a spinner.
+  Widget buildList(BuildContext context, EmailNavModuleModel model) {
+    return new Column(
+      children: model.labels.values.map((Label label) {
+        return new LabelListItem(
+          label: label,
+          selected: label.id == model.selectedLabelId,
+          onSelect: model.handleSelectedLabel,
+        );
+      }).toList(),
     );
   }
 }
