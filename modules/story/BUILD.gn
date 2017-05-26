@@ -19,7 +19,6 @@ flutter_app("story") {
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/widgets",
     "//apps/modules/email/packages/email_composer",
-    "//apps/modules/email/packages/email_session",
     "//apps/modules/email/packages/email_widgets",
     "//apps/modules/email/services/messages:messages_dart",
     "//apps/mozart/lib/flutter",

@@ -5,7 +5,6 @@
 export 'src/archive_dismissible_background.dart';
 export 'src/editor_action_bar_header.dart';
 export 'src/errors.dart';
-export 'src/label_list.dart';
 export 'src/label_list_item.dart';
 export 'src/message_action_bar_footer.dart';
 export 'src/message_content.dart';
@@ -18,5 +17,4 @@ export 'src/subject_input.dart';
 export 'src/thread_action_bar_header.dart';
 export 'src/thread_list_item.dart';
 export 'src/thread_participant_list.dart';
-export 'src/thread_view.dart';
 export 'src/type_defs.dart';

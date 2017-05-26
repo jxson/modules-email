@@ -10,7 +10,6 @@ dart_package("email_models") {
 
   deps = [
     "//apps/modules/common/packages/models",
-    "//third_party/dart-pkg/pub/flutter_flux",
     "//third_party/dart-pkg/pub/quiver",
     "//third_party/dart-pkg/pub/uuid",
   ]

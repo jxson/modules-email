@@ -28,6 +28,10 @@ final String _kEmailNavUrl = 'file:///system/apps/email/nav';
 final String _kEmailThreadListUrl = 'file:///system/apps/email/thread_list';
 final String _kEmailThreadUrl = 'file:///system/apps/email/thread';
 
+void _log(String message) {
+  print('[email/story - model]: $message');
+}
+
 class _DoneWatcher extends ModuleWatcher {
   VoidCallback onDone;
   _DoneWatcher({
@@ -44,11 +48,6 @@ class _DoneWatcher extends ModuleWatcher {
 /// The [ModuleModel] for the EmailStory.
 class EmailStoryModuleModel extends ModuleModel {
   String _composerLinkName;
-
-  /// A list used for holding references to the [ServiceProviderWrapper]
-  /// objects for the lifetime of this module.
-  final List<ServiceProviderWrapper> serviceProviders =
-      <ServiceProviderWrapper>[];
 
   ChildViewConnection _navConnection;
   ChildViewConnection _threadListConnection;
@@ -67,9 +66,6 @@ class EmailStoryModuleModel extends ModuleModel {
   /// Gets the [ChildViewConnection] for the message composer.
   ChildViewConnection get composerConnection => _composerConnection;
 
-  /// [ServiceProviderProxy] between email session and UI modules.
-  final ServiceProviderProxy emailSessionProvider = new ServiceProviderProxy();
-
   ModuleControllerProxy _composerController;
   ModuleWatcherBinding _composerWatcherBinding;
 
@@ -81,41 +77,26 @@ class EmailStoryModuleModel extends ModuleModel {
   ) {
     super.onReady(moduleContext, link, incomingServices);
 
-    // Starting EmailSession Module.
-    startModule(
-      url: _kEmailSessionUrl,
-      incomingServices: emailSessionProvider.ctrl.request(),
-    );
-
     // Launch modules that will be embedded.
-    _navConnection = new ChildViewConnection(
-      startModule(
-          url: _kEmailNavUrl,
-          outgoingServices: duplicateServiceProvider(emailSessionProvider)),
-    );
+    _navConnection = new ChildViewConnection(startModule(url: _kEmailNavUrl));
 
-    _threadListConnection = new ChildViewConnection(
-      startModule(
-          url: _kEmailThreadListUrl,
-          outgoingServices: duplicateServiceProvider(emailSessionProvider)),
-    );
+    _threadListConnection =
+        new ChildViewConnection(startModule(url: _kEmailThreadListUrl));
 
-    _threadConnection = new ChildViewConnection(
-      startModule(
-          url: _kEmailThreadUrl,
-          outgoingServices: duplicateServiceProvider(emailSessionProvider)),
-    );
+    _threadConnection =
+        new ChildViewConnection(startModule(url: _kEmailThreadUrl));
 
     notifyListeners();
   }
 
   @override
   void onNotify(String data) {
-    // Should this be the default behavior?
     if (data == null) return;
 
-    print('story - link updated');
-
+    /// Uses the link update as a way to detect if the email composition
+    /// module should be launched.
+    ///
+    /// TODO(SO-467): use story shell API's to launch email modules.
     String key = EmailComposerDocument.docroot;
     Map<String, dynamic> json = JSON.decode(data);
     if (json != null && json.containsKey(key)) {
@@ -127,8 +108,6 @@ class EmailStoryModuleModel extends ModuleModel {
 
   @override
   void onStop() {
-    emailSessionProvider.ctrl.close();
-    serviceProviders.forEach((ServiceProviderWrapper s) => s.close());
     _navConnection = null;
     _threadListConnection = null;
     _composerConnection = null;
@@ -148,26 +127,19 @@ class EmailStoryModuleModel extends ModuleModel {
     // module name is the module url
     String name = url;
 
-    print('Starting sub-module: $url');
+    _log('Starting sub-module: $url');
     moduleContext.startModule(
       name,
       url,
-      null, // Pass on our default link to our child.
+      null, // Pass the stories default link to child modules.
       outgoingServices,
       incomingServices,
       moduleControllerPair.passRequest(),
       viewOwnerPair.passRequest(),
     );
-    print('Started sub-module: $url');
+    _log('Started sub-module: $url');
 
     return viewOwnerPair.passHandle();
-  }
-
-  /// Duplicates a [ServiceProvider] and returns its handle.
-  InterfaceHandle<ServiceProvider> duplicateServiceProvider(ServiceProvider s) {
-    ServiceProviderWrapper dup = new ServiceProviderWrapper(s);
-    serviceProviders.add(dup);
-    return dup.getHandle();
   }
 
   /// Launch the email composer module.

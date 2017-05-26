@@ -100,8 +100,10 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
     /// load the labels; served by labels()
     _labels.complete(labels.map((Label label) {
-      String payload = JSON.encode(label);
-      return new ecp.Label.init(label.id, payload);
+      return new ecp.Label()
+        ..id = label.id
+        ..name = label.name
+        ..jsonPayload = JSON.encode(label);
     }).toList());
   }
 
@@ -159,17 +161,34 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   }
 
   @override
+  Future<Null> getLabel(String id, void callback(ecp.Label label)) async {
+    EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
+    Label label = await _api.label(id);
+    ecp.Label result = new ecp.Label()
+      ..id = label.id
+      ..name = label.name
+      ..jsonPayload = JSON.encode(label);
+    callback(result);
+  }
+
+  @override
   Future<Null> labels(void callback(List<ecp.Label> labels)) async {
-    _log('* labels() called');
     callback(await _labels.future);
-    _log('* labels() called back');
+  }
+
+  @override
+  Future<Null> getThread(String id, void callback(ecp.Thread thread)) async {
+    EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
+    Thread thread = await _api.thread(id);
+    ecp.Thread result = new ecp.Thread()
+      ..id = thread.id
+      ..jsonPayload = JSON.encode(thread);
+    callback(result);
   }
 
   @override
   Future<Null> threads(
       String labelId, int max, void callback(List<ecp.Thread> threads)) async {
-    _log('* threads() called');
-
     if (_labelToThreads[labelId] == null) {
       await _fetchThreads(labelId, max);
     }
@@ -184,11 +203,12 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
         throw new FormatException(message);
       }
 
-      return new ecp.Thread.init(thread.id, payload);
+      return new ecp.Thread()
+        ..id = thread.id
+        ..jsonPayload = payload;
     }).toList();
 
     callback(retval);
-    _log('* threads() called back');
   }
 
   @override

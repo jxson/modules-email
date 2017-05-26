@@ -88,6 +88,8 @@ class MessageActionBarFooter extends StatelessWidget {
             onPressed: _handleReplyMessage,
             height: 50.0,
           ),
+          // NOTE: The replay all button should only display if there is more
+          // than one person to reply to.
           new MaterialButton(
             child: _buildIconWithText(
               text: 'REPLY ALL',

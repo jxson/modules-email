@@ -29,7 +29,7 @@ class Thread {
   /// Constructor
   Thread({
     this.id,
-    this.snippet,
+    this.snippet: '',
     this.historyId,
     Map<String, Message> messages,
   }) {

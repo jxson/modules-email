@@ -2,105 +2,116 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:email_flux/flux.dart';
 import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
-import 'package:meta/meta.dart';
+import 'package:lib.widgets/modular.dart';
+
+import 'modular/module_model.dart';
 
 /// An email thread screen that shows all the messages in a particular email
 /// [Thread], built with the flux pattern.
-class EmailThreadScreen extends StoreWatcher {
-  /// The Flux StoreToken this screen uses for UI state.
-  final StoreToken token;
-
+class EmailThreadScreen extends StatelessWidget {
   /// Creates a new [EmailThreadScreen] instance.
   EmailThreadScreen({
     Key key,
-    @required this.token,
   })
       : super(key: key);
 
   @override
-  void initStores(ListenToStore listenToStore) {
-    listenToStore(token);
+  Widget build(BuildContext context) {
+    // TODO(SO-424): Use email spec compliant colors and sizing
+    return new Material(
+        color: Colors.white,
+        child: new ScopedModelDescendant<EmailThreadModuleModel>(
+          builder: buildFromModel,
+        ));
   }
 
-  @override
-  Widget build(BuildContext context, Map<StoreToken, Store> stores) {
-    EmailFluxStore fluxStore = stores[token];
+  /// Builder for UI depending on a [EmailThreadModuleModel] model.
+  Widget buildFromModel(
+    BuildContext context,
+    Widget child,
+    EmailThreadModuleModel model,
+  ) {
+    // TODO(SO-42): Error related display code should be here.
 
-    if (fluxStore.fetchingThreads) {
-      return new CircularProgressIndicator();
+    // Loading state.
+    if (model.loading) {
+      return new Center(child: new CircularProgressIndicator());
     }
 
-    if (fluxStore.errors.isNotEmpty) {
-      return new Errors(
-        errors: fluxStore.errors,
-      );
-    }
-
-    String id = fluxStore.focusedThreadId;
-    Thread thread = fluxStore.threads[id];
-    if (thread == null) {
-      // TODO(youngseokyoon): handle this situation better?
-      print('[screen_thread.dart] No focused thread. Drawing an empty screen.');
+    // TODO(SO-465): get a better blank slate UI.
+    if (model.thread == null) {
       return new Container();
     }
 
-    return new Center(
-      child: new ThreadView(
-        thread: thread,
-        onSelect: handleSelect,
-        onForward: handleForward,
-        onReplyAll: handleReplyAll,
-        onReply: handleReply,
-        onArchive: handleArchive,
-        onDelete: handleTrash,
-        onMoreActions: toggleMoreMenu,
+    return new Scaffold(
+      backgroundColor: Colors.white,
+      appBar: new AppBar(
+        backgroundColor: Colors.white,
+        title: new Text(
+          model.title,
+          style: new TextStyle(color: Colors.black),
+        ),
+        actions: <Widget>[
+          new IconButton(
+            icon: new Icon(Icons.delete),
+            onPressed: () {
+              model.handleTrash(model.thread);
+            },
+            color: Colors.grey[600],
+          ),
+          new IconButton(
+            icon: new Icon(Icons.archive),
+            onPressed: () {
+              model.handleArchive(model.thread);
+            },
+            color: Colors.grey[600],
+          ),
+        ],
       ),
+      body: buildBody(model),
+      bottomNavigationBar: buildFooter(model),
     );
   }
 
-  /// Toggle the More action icon.
-  void toggleMoreMenu(Thread thread) {
-    print('TODO: show a dropdown for the extra actions');
+  /// Build the body of the thread view.
+  Widget buildBody(EmailThreadModuleModel model) {
+    List<Widget> children = model.thread.messages.values.map((Message message) {
+      return new MessageListItem(
+        message: message,
+        // NOTE: Usage of an object key here will trigger a Flutter bug:
+        // https://github.com/flutter/flutter/issues/9185
+        // key: new ObjectKey(message.id),
+        onHeaderTap: model.handleSelect,
+        onForward: model.handleForward,
+        onReply: model.handleReply,
+        onReplyAll: model.handleReplyAll,
+      );
+    }).toList();
+
+    return new ListView(
+      children: children,
+    );
   }
 
-  /// Toggle message expansion.
-  void handleSelect(Message message) {
-    if (message.expanded) {
-      EmailFluxActions.closeMessage(message);
-    } else {
-      EmailFluxActions.expandMessage(message);
-    }
-  }
-
-  /// Archive thread.
-  void handleArchive(Thread thread) {
-    // Add some kind of animation or UI adaptation here?
-    EmailFluxActions.archiveThread(thread);
-  }
-
-  /// Move thread to trash.
-  void handleTrash(Thread thread) {
-    // Add some kind of animation or UI adaptation here?
-    EmailFluxActions.trashThread(thread);
-  }
-
-  /// Respond to the forward button being pressed.
-  void handleForward(Message message) {
-    print('TODO: handle fowarding messages');
-  }
-
-  /// Respond to the forward button being pressed.
-  void handleReplyAll(Message message) {
-    print('TODO: handle reply all');
-  }
-
-  /// Respond to the forward button being pressed.
-  void handleReply(Message message) {
-    print('TODO: handle reply');
+  /// Build the footer of the thread view.
+  Widget buildFooter(EmailThreadModuleModel model) {
+    return new DecoratedBox(
+      decoration: new BoxDecoration(
+        border: new Border(
+            top: new BorderSide(
+          color: Colors.black12,
+          width: 0.5,
+        )),
+      ),
+      child: new MessageActionBarFooter(
+        message: model.thread.lastMessage,
+        onForward: model.handleForward,
+        onReply: model.handleReply,
+        onReplyAll: model.handleReplyAll,
+      ),
+    );
   }
 }

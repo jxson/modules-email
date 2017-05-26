@@ -3,30 +3,22 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:email_flux/flux.dart';
-import 'package:email_session/client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lib.widgets/modular.dart';
 
+import 'src/modular/module_model.dart';
 import 'src/screen.dart';
 
 void main() {
-  EmailFluxStore fluxStore = new EmailFluxStore();
-  StoreToken token = new StoreToken(fluxStore);
   ApplicationContext applicationContext =
       new ApplicationContext.fromStartupInfo();
 
-  ModuleWidget<EmailSessionModuleModel> moduleWidget =
-      new ModuleWidget<EmailSessionModuleModel>(
+  ModuleWidget<EmailNavModuleModel> moduleWidget =
+      new ModuleWidget<EmailNavModuleModel>(
     applicationContext: applicationContext,
-    moduleModel: new EmailSessionModuleModel(
-      fluxStore: fluxStore,
-      name: 'nav',
-    ),
-    child: new EmailNavScreen(
-      token: token,
-    ),
+    moduleModel: new EmailNavModuleModel(),
+    child: new EmailNavScreen(),
   );
 
   moduleWidget.advertise();

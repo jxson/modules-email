@@ -9,8 +9,6 @@ dependencies:
     path: ../../../common/packages/models
   email_models:
     path: ../email_models
-  flutter_flux:
-    path: ../../../../../third_party/dart-pkg/pub/flutter_flux
 
 dev_dependencies:
   test: any

@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:email_models/models.dart';
-import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meta/meta.dart';
 
 /// Helper Functions for Testing
 
@@ -38,24 +35,4 @@ Future<bool> swipeDissmissable(
   await tester.pump(); // rebuild after the callback removes the entry
 
   return true;
-}
-
-/// A helper for creating a Widget tree with a ThreadView and all the required
-/// callbacks.
-Widget buildThreadView({
-  @required Thread thread,
-  MessageCallback onSelect,
-}) {
-  return new Material(
-    child: new ThreadView(
-      thread: thread,
-      onArchive: (Thread t) {},
-      onForward: (Message t) {},
-      onReply: (Message t) {},
-      onReplyAll: (Message t) {},
-      onDelete: (Thread t) {},
-      onMoreActions: (Thread t) {},
-      onSelect: onSelect ?? (Message t) {},
-    ),
-  );
 }
