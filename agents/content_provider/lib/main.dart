@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.maxwell.services.suggestion/proposal_publisher.fidl.dart';
 import 'package:apps.modular.services.agent/agent.fidl.dart';
 import 'package:apps.modular.services.agent/agent_context.fidl.dart';
@@ -14,110 +13,90 @@ import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
 import 'package:lib.fidl.dart/bindings.dart';
+import 'package:lib.modular/modular.dart';
+import 'package:meta/meta.dart';
 
 import 'src/content_provider_impl.dart';
 
-final ApplicationContext _context = new ApplicationContext.fromStartupInfo();
 EmailContentProviderAgent _agent;
 
-/// An implementation of the [Agent] interface.
-class EmailContentProviderAgent extends Agent {
-  // TOOD(vardhan): Need a proper BindingSet that self-removes dead interfaces.
-  // (Issue US-174)
-  // ignore: unused_field
-  AgentBinding _agentBinding;
-  ComponentContextProxy _componentContext;
-  TokenProviderProxy _tokenProvider;
+void _log(String msg) {
+  print('[email_content_provider:main] $msg');
+}
 
-  /// Provides the [EmailContentProvider] service.
-  /// TODO(vardhan): A ServiceProviderImpl should suport multiple bindings.
-  /// (Issue US-174)
-  final ServiceProviderImpl _outgoingServicesImpl = new ServiceProviderImpl();
-  final List<ServiceProviderBinding> _outgoingServicesBindings =
-      new List<ServiceProviderBinding>();
-
+/// An implementation of the [Agent] interface, which manages the connection to
+/// the email server and handles email related API call requests.
+class EmailContentProviderAgent extends AgentImpl {
   EmailContentProviderImpl _emailContentProviderImpl;
 
-  /// Constructor.
-  EmailContentProviderAgent(InterfaceRequest<Agent> request) {
-    _agentBinding = new AgentBinding()..bind(this, request);
-  }
+  /// Creates a new instance of [EmailContentProviderAgent].
+  EmailContentProviderAgent({@required ApplicationContext applicationContext})
+      : super(applicationContext: applicationContext);
 
-  /// Implements [Agent] interface.
   @override
-  Future<Null> initialize(
-    InterfaceHandle<AgentContext> agentContextHandle,
-    void callback(),
+  Future<Null> onReady(
+    ApplicationContext applicationContext,
+    AgentContext agentContext,
+    ComponentContext componentContext,
+    TokenProvider tokenProvider,
+    ServiceProviderImpl outgoingServices,
   ) async {
-    // Get the ComponentContext
-    AgentContextProxy agentContext = new AgentContextProxy()
-      ..ctrl.bind(agentContextHandle);
-    _componentContext = new ComponentContextProxy();
-    agentContext.getComponentContext(_componentContext.ctrl.request());
-
-    _tokenProvider = new TokenProviderProxy();
-    agentContext.getTokenProvider(_tokenProvider.ctrl.request());
+    _log('onReady start.');
 
     // Get the ProposalPublisher
     ProposalPublisherProxy proposalPublisher = new ProposalPublisherProxy();
-    connectToService(_context.environmentServices, proposalPublisher.ctrl);
+    connectToService(
+      applicationContext.environmentServices,
+      proposalPublisher.ctrl,
+    );
 
     _emailContentProviderImpl = new EmailContentProviderImpl(
-      _componentContext,
-      _tokenProvider,
+      componentContext,
+      tokenProvider,
       proposalPublisher,
     );
 
-    _outgoingServicesImpl.addServiceForName(
-        (InterfaceRequest<ecp.EmailContentProvider> request) async {
-      _emailContentProviderImpl.addBinding(request);
-    }, ecp.EmailContentProvider.serviceName);
+    outgoingServices.addServiceForName(
+      (InterfaceRequest<ecp.EmailContentProvider> request) {
+        _log('Received an EmailContentProvider request');
+        _emailContentProviderImpl.addBinding(request);
+      },
+      ecp.EmailContentProvider.serviceName,
+    );
 
-    final TaskInfo taskInfo = new TaskInfo();
-    taskInfo.taskId = 'refresh_timer';
-    taskInfo.triggerCondition = new TriggerCondition();
-    taskInfo.triggerCondition.alarmInSeconds = kRefreshPeriodSecs;
-    agentContext.scheduleTask(taskInfo);
+    // NOTE: Temporarily disabling the scheduled task.
+    // SEE:
+    // https://fuchsia.atlassian.net/browse/FW-191
+    // https://fuchsia.atlassian.net/browse/SO-389
+    agentContext.deleteTask('refresh_timer');
+
+    // Schedule a periodically running task for checking new emails.
+    // final TaskInfo taskInfo = new TaskInfo();
+    // taskInfo.taskId = 'refresh_timer';
+    // taskInfo.triggerCondition = new TriggerCondition();
+    // taskInfo.triggerCondition.alarmInSeconds = kRefreshPeriodSecs;
+    // agentContext.scheduleTask(taskInfo);
 
     await _emailContentProviderImpl.init();
-    callback();
+
+    _log('onReady end.');
   }
 
-  /// Implements [Agent] interface.
   @override
-  void connect(
-      String requestorUrl, InterfaceRequest<ServiceProvider> services) {
-    _outgoingServicesBindings.add(
-        new ServiceProviderBinding()..bind(_outgoingServicesImpl, services));
-  }
-
-  /// Implements [Agent] interface.
-  @override
-  Future<Null> runTask(String taskId, void callback()) async {
-    await _emailContentProviderImpl.onRefresh();
-    callback();
-  }
-
-  /// Implements [Agent] interface.
-  @override
-  void stop(void callback()) {
+  Future<Null> onStop() async {
     _emailContentProviderImpl.close();
-    _tokenProvider.ctrl.close();
-    _outgoingServicesBindings
-        .forEach((ServiceProviderBinding binding) => binding.close());
-    callback();
+  }
+
+  @override
+  Future<Null> onRunTask(String taskId) async {
+    await _emailContentProviderImpl.onRefresh();
   }
 }
 
 /// Main entry point.
 Future<Null> main(List<String> args) async {
-  _context.outgoingServices.addServiceForName(
-      (InterfaceRequest<Agent> request) {
-    if (_agent == null) {
-      _agent = new EmailContentProviderAgent(request);
-    } else {
-      // Can only connect to this interface once.
-      request.close();
-    }
-  }, Agent.serviceName);
+  _agent = new EmailContentProviderAgent(
+    applicationContext: new ApplicationContext.fromStartupInfo(),
+  );
+  _agent.advertise();
 }

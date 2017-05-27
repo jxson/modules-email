@@ -18,5 +18,6 @@ dart_app("content_provider") {
     "//apps/modules/email/packages/email_models",
     "//apps/modules/email/services/email:email_dart",
     "//lib/fidl/dart",
+    "//lib/widgets/packages/modular:lib.modular",
   ]
 }
