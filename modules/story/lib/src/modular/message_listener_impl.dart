@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 /// Callback with a [Message].
 typedef void MessageCallback(Message message);
 
-/// Implementation of [MessageListener] to be notified of email composotion
+/// Implementation of [MessageListener] to be notified of email composition
 /// module events.
 class MessageListenerImpl extends MessageListener {
   final List<MessageListenerBinding> _bindings = <MessageListenerBinding>[];

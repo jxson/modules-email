@@ -72,16 +72,13 @@ class _RecipientInputState extends State<RecipientInput> {
     }
   }
 
-  void _handleInputChange(String value) {
-    // TODO(dayang): If current newRecipient text is a valid email address
-    // that is an existing contact, automatically add it to the recipientList.
-    // https://fuchsia.atlassian.net/browse/SO-107
-  }
-
-  void _handleInputSubmit(String value) {
-    // TODO(dayang): Email validation + cleanup (white spaces)
-    // https://fuchsia.atlassian.net/browse/SO-108
-    if (value.isNotEmpty) {
+  void _checkForRecipient(String value) {
+    // See
+    // https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-(type%3Demail)
+    // Note the use of raw string notation to avoid interpolation
+    String regEx =
+        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$";
+    if (new RegExp(regEx).hasMatch(value)) {
       setState(() {
         _recipientList.add(new Mailbox(
           address: value,
@@ -90,6 +87,16 @@ class _RecipientInputState extends State<RecipientInput> {
         _notifyRecipientsChanged();
       });
     }
+  }
+
+  void _handleInputChange(String value) {
+    if (value.endsWith(',') || value.endsWith(' ')) {
+      _checkForRecipient(value.substring(0, value.length - 1));
+    }
+  }
+
+  void _handleInputSubmit(String value) {
+    _checkForRecipient(value);
   }
 
   void _removeRecipient(Mailbox recipient) {
@@ -134,14 +141,15 @@ class _RecipientInputState extends State<RecipientInput> {
     });
 
     //add text input
-    rowChildren.add(new Container(
-      width: 100.0,
-      child: new TextField(
-        controller: _controller,
-        onChanged: _handleInputChange,
-        onSubmitted: _handleInputSubmit,
-        style: inputStyle,
-        decoration: null,
+    rowChildren.add(new Expanded(
+      child: new Container(
+        child: new TextField(
+          controller: _controller,
+          onChanged: _handleInputChange,
+          onSubmitted: _handleInputSubmit,
+          style: inputStyle,
+          decoration: null,
+        ),
       ),
     ));
 

@@ -41,7 +41,7 @@ class EditorScreen extends StatefulWidget {
   final VoidCallback onClose;
 
   /// Callback for sending message
-  final VoidCallback onSend;
+  final MessageCallback onSend;
 
   /// Callback for 'attach file' affordance
   final VoidCallback onAttach;
@@ -75,6 +75,17 @@ class _EditorScreenState extends State<EditorScreen> {
     _recipientList = widget.draft?.recipientList ?? <Mailbox>[];
     _subject = widget.draft?.subject ?? '';
     _text = widget.draft?.text ?? '';
+  }
+
+  void _handleSend() {
+    if (widget.onSend != null) {
+      Message message = new Message(
+        recipientList: _recipientList,
+        subject: _subject,
+        text: _text,
+      );
+      widget.onSend(message);
+    }
   }
 
   void _handleDraftUpdate() {
@@ -113,7 +124,7 @@ class _EditorScreenState extends State<EditorScreen> {
             enableSend: widget.enableSend,
             onAttach: widget.onAttach,
             onClose: widget.onClose,
-            onSend: widget.onSend,
+            onSend: _handleSend,
           ),
           new RecipientInput(
             inputLabel: 'To',

@@ -50,5 +50,11 @@ class EmailComposerModuleModel extends ModuleModel {
   /// Handle the submit event from the UI.
   void handleSubmit(Message message) {
     serviceImpl.handleSubmit(message);
+    moduleContext.done();
+  }
+
+  /// Handle the close event from the UI.
+  void handleClose() {
+    moduleContext.done();
   }
 }

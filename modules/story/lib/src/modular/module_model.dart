@@ -8,6 +8,7 @@ import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.module/module_controller.fidl.dart';
+import 'package:apps.modular.services.module/module_state.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
 import 'package:apps.modules.email.services.messages/message.fidl.dart';
 import 'package:apps.modules.email.services.messages/message_composer.fidl.dart';
@@ -26,6 +27,19 @@ final String _kEmailSessionUrl = 'file:///system/apps/email/session';
 final String _kEmailNavUrl = 'file:///system/apps/email/nav';
 final String _kEmailThreadListUrl = 'file:///system/apps/email/thread_list';
 final String _kEmailThreadUrl = 'file:///system/apps/email/thread';
+
+class _DoneWatcher extends ModuleWatcher {
+  VoidCallback onDone;
+  _DoneWatcher({
+    this.onDone,
+  });
+  @override
+  void onStateChange(ModuleState newState) {
+    if (newState == ModuleState.done) {
+      this.onDone();
+    }
+  }
+}
 
 /// The [ModuleModel] for the EmailStory.
 class EmailStoryModuleModel extends ModuleModel {
@@ -55,6 +69,9 @@ class EmailStoryModuleModel extends ModuleModel {
 
   /// [ServiceProviderProxy] between email session and UI modules.
   final ServiceProviderProxy emailSessionProvider = new ServiceProviderProxy();
+
+  ModuleControllerProxy _composerController;
+  ModuleWatcherBinding _composerWatcherBinding;
 
   @override
   void onReady(
@@ -114,6 +131,7 @@ class EmailStoryModuleModel extends ModuleModel {
     serviceProviders.forEach((ServiceProviderWrapper s) => s.close());
     _navConnection = null;
     _threadListConnection = null;
+    _composerConnection = null;
     super.onStop();
   }
 
@@ -168,8 +186,7 @@ class EmailStoryModuleModel extends ModuleModel {
     String name = _kEmailComposerUrl;
     ServiceProviderProxy incomingServices = new ServiceProviderProxy();
     InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
-    InterfacePair<ModuleController> moduleControllerPair =
-        new InterfacePair<ModuleController>();
+    _composerController = new ModuleControllerProxy();
 
     moduleContext.startModule(
       name,
@@ -177,11 +194,15 @@ class EmailStoryModuleModel extends ModuleModel {
       doc.linkName,
       null,
       incomingServices.ctrl.request(),
-      moduleControllerPair.passRequest(),
+      _composerController.ctrl.request(),
       viewOwnerPair.passRequest(),
     );
 
     composerLink.ctrl.close();
+
+    _composerWatcherBinding = new ModuleWatcherBinding();
+    _composerController.watch(_composerWatcherBinding
+        .wrap(new _DoneWatcher(onDone: this.handleComposerDone)));
 
     _composerConnection = new ChildViewConnection(viewOwnerPair.passHandle());
     MessageComposerProxy composerService = new MessageComposerProxy();
@@ -202,18 +223,29 @@ class EmailStoryModuleModel extends ModuleModel {
 
   /// Callback handler for [MessageListenerImpl.onSubmitted].
   void handleMessageSubmitted(Message message) {
-    // Cleaning up the running message composition module.
-    LinkProxy composerLink = new LinkProxy();
-    moduleContext.getLink(_composerLinkName, composerLink.ctrl.request());
-    composerLink.erase(EmailComposerDocument.path);
-    composerLink.ctrl.close();
-    _composerConnection = null;
-    notifyListeners();
+    print('email/story: send message not implemented: ${message?.json}');
   }
 
   /// Callback handler for [MessageListenerImpl.onChanged].
   void handleMessageChanged(Message message) {
     print('email/story: change event not implemented.');
+  }
+
+  /// Callback handler for handling done state in [ModuleWatcher.onStateChange].
+  void handleComposerDone() {
+    _composerController.stop(() {
+      LinkProxy composerLink = new LinkProxy();
+      moduleContext.getLink(_composerLinkName, composerLink.ctrl.request());
+      composerLink.erase(EmailComposerDocument.path);
+      composerLink.ctrl.close();
+
+      _composerWatcherBinding.close();
+      _composerWatcherBinding = null;
+      _composerController = null;
+      _composerConnection = null;
+
+      notifyListeners();
+    });
   }
 }
 

@@ -4,11 +4,11 @@
 
 import 'package:application.lib.app.dart/app.dart';
 import 'package:email_models/models.dart';
-import 'package:flutter/widgets.dart';
+import 'package:email_widgets/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:lib.widgets/modular.dart';
 
 import 'src/modular/module_model.dart';
-import 'src/screen.dart';
 
 void main() {
   EmailComposerModuleModel model = new EmailComposerModuleModel();
@@ -17,14 +17,18 @@ void main() {
       new ModuleWidget<EmailComposerModuleModel>(
     moduleModel: model,
     applicationContext: new ApplicationContext.fromStartupInfo(),
-    child: new EmailComposerScreen(
+    child: new EditorScreen(
       // TODO: hydrate this from the Link.
-      message: new Message(),
-      onSubmit: model.handleSubmit,
+      draft: new Message(),
+      enableSend: true,
+      onSend: model.handleSubmit,
+      onClose: model.handleClose,
     ),
   );
 
   moduleWidget.advertise();
 
-  runApp(moduleWidget);
+  runApp(new MaterialApp(
+    home: moduleWidget,
+  ));
 }

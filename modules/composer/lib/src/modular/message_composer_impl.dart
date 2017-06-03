@@ -26,7 +26,6 @@ class MessageComposerImpl extends MessageComposer {
   }
 
   /// Close FIDL bindings.
-  // QUESTION: Who calls this?
   void close() {
     _bindings.forEach((MessageComposerBinding binding) => binding.close());
     _listeners
