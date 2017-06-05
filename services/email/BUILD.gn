@@ -9,4 +9,7 @@ fidl("email") {
   sources = [
     "email_content_provider.fidl",
   ]
+  deps = [
+    "//apps/modules/email/services/messages",
+  ]
 }

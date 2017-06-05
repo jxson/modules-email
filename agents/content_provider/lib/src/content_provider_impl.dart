@@ -11,12 +11,16 @@ import 'package:apps.maxwell.services.suggestion/suggestion_display.fidl.dart';
 import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modular.services.component/message_queue.fidl.dart';
+import 'package:apps.modules.email.agents.content_provider..content_provider_dart_package/src/email_message.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
+import 'package:apps.modules.email.services.messages/message.fidl.dart' as m;
 import 'package:email_api/email_api.dart';
 import 'package:email_models/models.dart';
+import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:lib.fidl.dart/bindings.dart' as bindings;
 import 'package:models/user.dart';
+import 'package:util/extract_uri.dart';
 
 import 'api.dart';
 
@@ -58,6 +62,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   // that unchanged state can be awaited repeatedly and it is fine.
   final Completer<ecp.User> _user = new Completer<ecp.User>();
   final Completer<List<ecp.Label>> _labels = new Completer<List<ecp.Label>>();
+
   // label id -> list of threads
   final Map<String, Completer<List<Thread>>> _labelToThreads =
       new Map<String, Completer<List<Thread>>>();
@@ -227,5 +232,189 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     _notificationSubscribers[messageQueueToken] = subscriber;
     _componentContext.getMessageSender(
         messageQueueToken, subscriber.senderProxy.ctrl.request());
+  }
+
+  Future<gmail.GmailApi> _gmailApi() async {
+    final EmailAPI api = await API.fromTokenProvider(_tokenProvider);
+    return api.gmailApi;
+  }
+
+  m.Message _fidlMessageFromGmail(gmail.Message g) {
+    final m.Message message = new m.Message();
+    message.id = g.id;
+    message.threadId = g.threadId;
+
+    final messageModel = _message(g);
+    message.json = JSON.encode(messageModel.toJson());
+
+    return message;
+  }
+
+  /// Create a GMail API message object for saving as a draft.
+  gmail.Message _gmailMessageFromFidl(m.Message f) {
+    final message = new gmail.Message()
+      ..id = f.id
+      ..threadId = f.threadId;
+
+    final messageModel = new Message.fromJson(JSON.decode(f.json));
+
+    // Check that id & threadId match for f and messageModel.
+    assert(f.id == messageModel.id);
+    assert(f.threadId == messageModel.threadId);
+    // Check that there are no attachments.
+    assert(messageModel.attachments == null ||
+        messageModel.attachments.length == 0);
+
+    List<Header> headers = [
+      new Header('From', messageModel.sender.toString()),
+      new Header(
+          'To', messageModel.recipientList.map((m) => m.toString()).join(', ')),
+      new Header('Cc', messageModel.ccList.map((m) => m.toString()).join(', ')),
+      new Header('Subject', messageModel.subject),
+    ];
+
+    message.rawAsBytes =
+        ASCII.encode(encodePlainTextEmailMessage(headers, messageModel.text));
+    return message;
+  }
+
+  @override
+  Future<Null> createDraft(m.Message message,
+      void callback(ecp.Draft draft, m.Message message)) async {
+    final _gmail = await _gmailApi();
+    final gmailDraft = new gmail.Draft()
+      ..message = _gmailMessageFromFidl(message);
+    final newDraft = await _gmail.users.drafts.create(gmailDraft, 'me');
+    callback(
+        new ecp.Draft()
+          ..id = newDraft.id
+          ..messageId = newDraft.message.id
+          ..threadId = newDraft.message.threadId,
+        _fidlMessageFromGmail(newDraft.message));
+  }
+
+  @override
+  Future<Null> drafts(int max, void callback(List<ecp.Draft> drafts)) async {
+    final _gmail = await _gmailApi();
+    gmail.ListDraftsResponse response =
+        await _gmail.users.drafts.list('me', maxResults: max);
+    callback(response.drafts.map((gmail.Draft draft) => new ecp.Draft.init(
+        draft.id, draft.message.id, draft.message.threadId)));
+  }
+
+  @override
+  Future<Null> getDraftMessage(
+      String draftId, void callback(m.Message message)) async {
+    final _gmail = await _gmailApi();
+    final gmail.Draft gmailDraft = await _gmail.users.drafts.get('me', draftId);
+    callback(_fidlMessageFromGmail(gmailDraft.message));
+  }
+
+  @override
+  Future<Null> updateDraft(String draftId, m.Message message,
+      void callback(m.Message updatedMessage)) async {
+    final _gmail = await _gmailApi();
+    final gmailDraft = new gmail.Draft()
+      ..id = draftId
+      ..message = _gmailMessageFromFidl(message);
+    final updatedDraft =
+        await _gmail.users.drafts.update(gmailDraft, 'me', draftId);
+    callback(_fidlMessageFromGmail(updatedDraft.message));
+  }
+
+  @override
+  Future<Null> sendDraft(
+      String draftId, void callback(m.Message sentMessage)) async {
+    final _gmail = await _gmailApi();
+    final gmail.Draft gmailDraft = new gmail.Draft();
+    // The GMail API only needs a draftId to send an existing draft.
+    gmailDraft.id = draftId;
+    final gmail.Message sentMessage =
+        await _gmail.users.drafts.send(gmailDraft, 'me');
+    callback(_fidlMessageFromGmail(sentMessage));
+  }
+
+  @override
+  Future<Null> deleteDraft(String draftId, void callback()) async {
+    final _gmail = await _gmailApi();
+    await _gmail.users.drafts.delete('me', draftId);
+    callback();
+  }
+}
+
+// From email_api.dart.
+Message _message(gmail.Message message) {
+  String subject;
+  Mailbox sender;
+  List<Mailbox> to = <Mailbox>[];
+  List<Mailbox> cc = <Mailbox>[];
+
+  // TODO(jxson): SO-139 Add profile fetching for all users encountered.
+
+  // Pull [Message] meta from [gmail.MessagePartHeader]s.
+  message.payload.headers.forEach((gmail.MessagePartHeader header) {
+    String name = header.name.toLowerCase();
+    switch (name) {
+      case 'from':
+        sender = new Mailbox.fromString(header.value);
+        break;
+      case 'subject':
+        subject = header.value;
+        break;
+      case 'to':
+        to.addAll(_split(header));
+        break;
+      case 'cc':
+        cc.addAll(_split(header));
+        break;
+    }
+  });
+
+  String body = _body(message);
+  List<Uri> links = extractURI(body);
+
+  return new Message(
+    id: message.id,
+    threadId: message.threadId,
+    timestamp: _timestamp(message.internalDate),
+    isRead: !message.labelIds.contains('UNREAD'),
+    sender: sender,
+    subject: subject,
+    senderProfileUrl: null,
+    recipientList: to,
+    ccList: cc,
+    text: body,
+    links: links,
+  );
+}
+
+// From email_api.dart.
+int _timestamp(String stamp) {
+  return int.parse(stamp);
+}
+
+// From email_api.dart.
+List<Mailbox> _split(gmail.MessagePartHeader header) {
+  return header.value
+      .split(', ')
+      .map((String s) => new Mailbox.fromString(s))
+      .toList();
+}
+
+// From email_api.dart.
+String _body(gmail.Message message) {
+  gmail.MessagePart part = message.payload.parts
+      ?.reduce((gmail.MessagePart previous, gmail.MessagePart current) {
+    if (current.mimeType == 'text/plain') {
+      return current;
+    }
+  });
+
+  if (part != null) {
+    List<int> base64 = BASE64.decode(part.body.data);
+    String utf8 = UTF8.decode(base64);
+    return utf8;
+  } else {
+    return message.snippet;
   }
 }

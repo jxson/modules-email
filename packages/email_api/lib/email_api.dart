@@ -54,6 +54,9 @@ class EmailAPI {
     _gmail = new gmail.GmailApi(_client);
   }
 
+  /// Get the [GmailApi] instance.
+  gmail.GmailApi get gmailApi => _gmail;
+
   /// Get the logged in [User] object from [Oauth2Api].
   Future<User> me() async {
     oauth.Oauth2Api _oauth = new oauth.Oauth2Api(_client);
