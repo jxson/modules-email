@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
-import 'package:email_models/models.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.widgets/modular.dart';
@@ -17,13 +16,15 @@ void main() {
       new ModuleWidget<EmailComposerModuleModel>(
     moduleModel: model,
     applicationContext: new ApplicationContext.fromStartupInfo(),
-    child: new EditorScreen(
-      // TODO: hydrate this from the Link.
-      draft: new Message(),
-      enableSend: true,
-      onSend: model.handleSubmit,
-      onClose: model.handleClose,
-    ),
+    child: new ScopedModelDescendant<EmailComposerModuleModel>(builder:
+        (BuildContext context, Widget child, EmailComposerModuleModel model) {
+      return new EditorScreen(
+        draft: model.message,
+        enableSend: true,
+        onSend: model.handleSubmit,
+        onClose: model.handleClose,
+      );
+    }),
   );
 
   moduleWidget.advertise();

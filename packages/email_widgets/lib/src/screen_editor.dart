@@ -99,6 +99,16 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
+  @override
+  void didUpdateWidget(EditorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.draft != widget.draft) {
+      _recipientList = widget.draft.recipientList;
+      _subject = widget.draft.subject;
+      _text = widget.draft.text;
+    }
+  }
+
   void _handleRecipientChange(List<Mailbox> recipientList) {
     _recipientList = recipientList;
     _handleDraftUpdate();

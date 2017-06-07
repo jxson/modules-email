@@ -105,7 +105,8 @@ class Message {
       timestamp: json['timestamp'],
       isRead: json['isRead'],
       links: links != null ? links.toList() : const <Uri>[],
-      attachments: attachments != null ? attachments.toList() : const <Uri>[],
+      attachments:
+          attachments != null ? attachments.toList() : const <Attachment>[],
       recipientList: to != null ? to.toList() : const <Mailbox>[],
       ccList: cc != null ? cc.toList() : const <Mailbox>[],
       expanded: json['expanded'],
@@ -140,7 +141,9 @@ class Message {
   @override
   String toString() {
     return 'Message('
-        'id: $id"'
+        'id: $id'
+        'subject: $subject'
+        'test: $text'
         ')';
   }
 

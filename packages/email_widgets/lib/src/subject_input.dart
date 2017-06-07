@@ -48,6 +48,14 @@ class _SubjectInputState extends State<SubjectInput> {
   }
 
   @override
+  void didUpdateWidget(SubjectInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialText != widget.initialText) {
+      _controller.text = widget.initialText;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     TextStyle inputStyle = widget.inputStyle ?? theme.textTheme.subhead;

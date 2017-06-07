@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
@@ -19,6 +21,11 @@ class EmailComposerModuleModel extends ModuleModel {
 
   final ServiceProviderImpl _outgoingServiceProvider =
       new ServiceProviderImpl();
+
+  /// The message associated with this composer instance. It's obtained from the
+  /// intial link.
+  Message get message => _message;
+  Message _message = new Message();
 
   @override
   ServiceProvider get outgoingServiceProvider => _outgoingServiceProvider;
@@ -45,6 +52,16 @@ class EmailComposerModuleModel extends ModuleModel {
   void onStop() {
     serviceImpl.close();
     super.onStop();
+  }
+
+  @override
+  void onNotify(String json) {
+    if (json == null) {
+      return;
+    }
+    dynamic decoded = JSON.decode(json);
+    _message = new Message.fromJson(decoded['email-composer']['message']);
+    notifyListeners();
   }
 
   /// Handle the submit event from the UI.
