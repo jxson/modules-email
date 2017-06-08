@@ -134,7 +134,8 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
               0xffffffff,
               SuggestionImageType.person,
               new List<String>(),
-              '');
+              '',
+              AnnoyanceType.none);
 
           _proposalPublisher.propose(p);
         });
