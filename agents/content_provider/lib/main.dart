@@ -64,18 +64,12 @@ class EmailContentProviderAgent extends AgentImpl {
       ecp.EmailContentProvider.serviceName,
     );
 
-    // NOTE: Temporarily disabling the scheduled task.
-    // SEE:
-    // https://fuchsia.atlassian.net/browse/FW-191
-    // https://fuchsia.atlassian.net/browse/SO-389
-    agentContext.deleteTask('refresh_timer');
-
     // Schedule a periodically running task for checking new emails.
-    // final TaskInfo taskInfo = new TaskInfo();
-    // taskInfo.taskId = 'refresh_timer';
-    // taskInfo.triggerCondition = new TriggerCondition();
-    // taskInfo.triggerCondition.alarmInSeconds = kRefreshPeriodSecs;
-    // agentContext.scheduleTask(taskInfo);
+    final TaskInfo taskInfo = new TaskInfo();
+    taskInfo.taskId = 'refresh_timer';
+    taskInfo.triggerCondition = new TriggerCondition();
+    taskInfo.triggerCondition.alarmInSeconds = kRefreshPeriodSecs;
+    agentContext.scheduleTask(taskInfo);
 
     await _emailContentProviderImpl.init();
 
