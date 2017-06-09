@@ -58,10 +58,14 @@ class EmailComposerModuleModel extends ModuleModel {
 
   @override
   void onNotify(String json) {
-    if (json == null) {
+    if (json == null || json == 'null') {
       return;
     }
+
     dynamic decoded = JSON.decode(json);
+    if (decoded == null) {
+      return;
+    }
     _message = new Message.fromJson(decoded['email-composer']['message']);
     notifyListeners();
   }
