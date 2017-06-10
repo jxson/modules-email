@@ -213,6 +213,7 @@ class EmailStoryModuleModel extends ModuleModel {
 
       _composerWatcherBinding.close();
       _composerWatcherBinding = null;
+      _composerController.ctrl.close();
       _composerController = null;
       _composerConnection = null;
 

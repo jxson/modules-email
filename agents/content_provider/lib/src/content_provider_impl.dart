@@ -244,7 +244,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     message.id = g.id;
     message.threadId = g.threadId;
 
-    final messageModel = _message(g);
+    final Message messageModel = _message(g);
     message.json = JSON.encode(messageModel.toJson());
 
     return message;
@@ -252,11 +252,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   /// Create a GMail API message object for saving as a draft.
   gmail.Message _gmailMessageFromFidl(m.Message f) {
-    final message = new gmail.Message()
+    final gmail.Message message = new gmail.Message()
       ..id = f.id
       ..threadId = f.threadId;
 
-    final messageModel = new Message.fromJson(JSON.decode(f.json));
+    final Message messageModel = new Message.fromJson(JSON.decode(f.json));
 
     // Check that id & threadId match for f and messageModel.
     assert(f.id == messageModel.id);
@@ -265,11 +265,15 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     assert(messageModel.attachments == null ||
         messageModel.attachments.length == 0);
 
-    List<Header> headers = [
+    List<Header> headers = <Header>[
       new Header('From', messageModel.sender.toString()),
       new Header(
-          'To', messageModel.recipientList.map((m) => m.toString()).join(', ')),
-      new Header('Cc', messageModel.ccList.map((m) => m.toString()).join(', ')),
+          'To',
+          messageModel.recipientList
+              .map((Mailbox m) => m.toString())
+              .join(', ')),
+      new Header('Cc',
+          messageModel.ccList.map((Mailbox m) => m.toString()).join(', ')),
       new Header('Subject', messageModel.subject),
     ];
 
@@ -281,10 +285,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   @override
   Future<Null> createDraft(m.Message message,
       void callback(ecp.Draft draft, m.Message message)) async {
-    final _gmail = await _gmailApi();
-    final gmailDraft = new gmail.Draft()
+    final gmail.GmailApi _gmail = await _gmailApi();
+    final gmail.Draft gmailDraft = new gmail.Draft()
       ..message = _gmailMessageFromFidl(message);
-    final newDraft = await _gmail.users.drafts.create(gmailDraft, 'me');
+    final gmail.Draft newDraft =
+        await _gmail.users.drafts.create(gmailDraft, 'me');
     callback(
         new ecp.Draft()
           ..id = newDraft.id
@@ -295,7 +300,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   @override
   Future<Null> drafts(int max, void callback(List<ecp.Draft> drafts)) async {
-    final _gmail = await _gmailApi();
+    final gmail.GmailApi _gmail = await _gmailApi();
     gmail.ListDraftsResponse response =
         await _gmail.users.drafts.list('me', maxResults: max);
     callback(response.drafts.map((gmail.Draft draft) => new ecp.Draft.init(
@@ -305,7 +310,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   @override
   Future<Null> getDraftMessage(
       String draftId, void callback(m.Message message)) async {
-    final _gmail = await _gmailApi();
+    final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = await _gmail.users.drafts.get('me', draftId);
     callback(_fidlMessageFromGmail(gmailDraft.message));
   }
@@ -313,11 +318,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   @override
   Future<Null> updateDraft(String draftId, m.Message message,
       void callback(m.Message updatedMessage)) async {
-    final _gmail = await _gmailApi();
-    final gmailDraft = new gmail.Draft()
+    final gmail.GmailApi _gmail = await _gmailApi();
+    final gmail.Draft gmailDraft = new gmail.Draft()
       ..id = draftId
       ..message = _gmailMessageFromFidl(message);
-    final updatedDraft =
+    final gmail.Draft updatedDraft =
         await _gmail.users.drafts.update(gmailDraft, 'me', draftId);
     callback(_fidlMessageFromGmail(updatedDraft.message));
   }
@@ -325,7 +330,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   @override
   Future<Null> sendDraft(
       String draftId, void callback(m.Message sentMessage)) async {
-    final _gmail = await _gmailApi();
+    final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = new gmail.Draft();
     // The GMail API only needs a draftId to send an existing draft.
     gmailDraft.id = draftId;
@@ -336,7 +341,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   @override
   Future<Null> deleteDraft(String draftId, void callback()) async {
-    final _gmail = await _gmailApi();
+    final gmail.GmailApi _gmail = await _gmailApi();
     await _gmail.users.drafts.delete('me', draftId);
     callback();
   }
