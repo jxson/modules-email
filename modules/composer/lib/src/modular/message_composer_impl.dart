@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:convert' show JSON;
-
 import 'package:apps.modules.email.services.messages/message.fidl.dart';
 import 'package:apps.modules.email.services.messages/message_composer.fidl.dart';
-import 'package:email_models/models.dart' as models;
 import 'package:lib.fidl.dart/bindings.dart'
     show InterfaceHandle, InterfaceRequest;
 
@@ -41,24 +38,9 @@ class MessageComposerImpl extends MessageComposer {
   }
 
   /// Trigger listeners with converted Message.
-  void handleSubmit(models.Message message) {
-    String data;
-
-    try {
-      data = JSON.encode(message);
-    } catch (err) {
-      // TODO(SO-266): Handle errors appropriately, nothing handles this
-      // exception.
-      throw new FormatException('Failed to encode Message: $err');
-    }
-
-    Message fidlMessage = new Message()
-      ..id = message.id
-      ..threadId = message.threadId
-      ..json = data;
-
+  void handleSubmit(Message message) {
     _listeners.forEach((MessageListenerProxy listener) {
-      listener.onSubmitted(fidlMessage);
+      listener.onSubmitted(message);
     });
   }
 }

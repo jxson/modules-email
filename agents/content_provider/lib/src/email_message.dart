@@ -137,10 +137,10 @@ String encodePlainTextEmailMessage(List<Header> headers, String body) {
 
   StringBuffer message = new StringBuffer();
   for (final Header header in fullHeaders) {
-    _encodeHeader(header, message);
+    if (header.value != null) _encodeHeader(header, message);
   }
   message.write('\r\n'); // End of headers marker.
-  message.write(BASE64.encode(UTF8.encode(body)));
+  message.write(BASE64.encode(UTF8.encode(body ?? '')));
 
   return message.toString();
 }

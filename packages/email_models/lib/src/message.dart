@@ -18,40 +18,40 @@ const ListEquality<Mailbox> _mailboxListEquality =
 @Generator(EmailFixtures, 'message')
 class Message {
   /// Unique Identifier for given email message
-  final String id;
+  String id;
 
   /// Unique Identifier for the thread that contains this message
-  final String threadId;
+  String threadId;
 
   /// List of recipient mailboxes
-  final List<Mailbox> recipientList;
+  List<Mailbox> recipientList;
 
   /// List of mailboxes that are CCed in email message
-  final List<Mailbox> ccList;
+  List<Mailbox> ccList;
 
   /// Mailbox of sender
-  final Mailbox sender;
+  Mailbox sender;
 
   /// URL pointing to Avatar of sender
-  final String senderProfileUrl;
+  String senderProfileUrl;
 
   /// Subject line of email
-  final String subject;
+  String subject;
 
   /// Main body text of email
-  final String text;
+  String text;
 
   /// List of links (URIs) that are found within email
-  final List<Uri> links;
+  List<Uri> links;
 
   /// List of attachments for given email
-  final List<Attachment> attachments;
+  List<Attachment> attachments;
 
   /// Timestamp (epoch ms) used for ordering.
-  final int timestamp;
+  int timestamp;
 
   /// True if Email Message has been read
-  final bool isRead;
+  bool isRead;
 
   /// If a message is expanded or not, this is UI state not derived from REST
   /// API.

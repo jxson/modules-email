@@ -329,14 +329,20 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   @override
   Future<Null> sendDraft(
-      String draftId, void callback(m.Message sentMessage)) async {
+      String draftId, void callback(ecp.Status status)) async {
     final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = new gmail.Draft();
     // The GMail API only needs a draftId to send an existing draft.
     gmailDraft.id = draftId;
-    final gmail.Message sentMessage =
-        await _gmail.users.drafts.send(gmailDraft, 'me');
-    callback(_fidlMessageFromGmail(sentMessage));
+    ecp.Status result = new ecp.Status();
+    try {
+      await _gmail.users.drafts.send(gmailDraft, 'me');
+      result.success = true;
+    } catch (e) {
+      result.success = false;
+      result.message = e.toString();
+    }
+    callback(result);
   }
 
   @override
@@ -357,26 +363,28 @@ Message _message(gmail.Message message) {
   // TODO(jxson): SO-139 Add profile fetching for all users encountered.
 
   // Pull [Message] meta from [gmail.MessagePartHeader]s.
-  message.payload.headers.forEach((gmail.MessagePartHeader header) {
-    String name = header.name.toLowerCase();
-    switch (name) {
-      case 'from':
-        sender = new Mailbox.fromString(header.value);
-        break;
-      case 'subject':
-        subject = header.value;
-        break;
-      case 'to':
-        to.addAll(_split(header));
-        break;
-      case 'cc':
-        cc.addAll(_split(header));
-        break;
-    }
-  });
+  if (message.payload != null) {
+    message.payload.headers.forEach((gmail.MessagePartHeader header) {
+      String name = header.name.toLowerCase();
+      switch (name) {
+        case 'from':
+          sender = new Mailbox.fromString(header.value);
+          break;
+        case 'subject':
+          subject = header.value;
+          break;
+        case 'to':
+          to.addAll(_split(header));
+          break;
+        case 'cc':
+          cc.addAll(_split(header));
+          break;
+      }
+    });
+  }
 
   String body = _body(message);
-  List<Uri> links = extractURI(body);
+  List<Uri> links = body != null ? extractURI(body) : <Uri>[];
 
   return new Message(
     id: message.id,
@@ -395,7 +403,7 @@ Message _message(gmail.Message message) {
 
 // From email_api.dart.
 int _timestamp(String stamp) {
-  return int.parse(stamp);
+  return stamp != null ? int.parse(stamp) : 0;
 }
 
 // From email_api.dart.
@@ -408,12 +416,15 @@ List<Mailbox> _split(gmail.MessagePartHeader header) {
 
 // From email_api.dart.
 String _body(gmail.Message message) {
-  gmail.MessagePart part = message.payload.parts
-      ?.reduce((gmail.MessagePart previous, gmail.MessagePart current) {
-    if (current.mimeType == 'text/plain') {
-      return current;
-    }
-  });
+  gmail.MessagePart part;
+  if (message.payload != null) {
+    part = message.payload.parts
+        ?.reduce((gmail.MessagePart previous, gmail.MessagePart current) {
+      if (current.mimeType == 'text/plain') {
+        return current;
+      }
+    });
+  }
 
   if (part != null) {
     List<int> base64 = BASE64.decode(part.body.data);

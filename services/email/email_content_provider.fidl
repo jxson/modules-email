@@ -58,6 +58,11 @@ struct Draft {
   string thread_id;
 };
 
+struct Status {
+  bool success;
+  string? message;
+};
+
 [ServiceName="email_content_provider.EmailContentProvider"]
 interface EmailContentProvider {
   Me() => (User user);
@@ -83,6 +88,6 @@ interface EmailContentProvider {
   GetDraftMessage(string draft_id) => (email.Message message);
   UpdateDraft(string draft_id, email.Message message)
     => (email.Message updated_message);
-  SendDraft(string draft_id) => (email.Message sent_message);
+  SendDraft(string draft_id) => (Status status);
   DeleteDraft(string draft_id) => ();
 };

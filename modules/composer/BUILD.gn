@@ -16,6 +16,7 @@ flutter_app("composer") {
     "//apps/modules/email/packages/email_models",
     "//apps/modules/email/packages/email_widgets",
     "//apps/modules/email/services/messages:messages_dart",
+    "//apps/modules/email/services/email:email_dart",
     "//apps/mozart/lib/flutter",
     "//apps/mozart/services/views:views_dart",
     "//lib/fidl/dart",

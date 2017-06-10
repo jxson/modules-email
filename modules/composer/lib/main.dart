@@ -21,6 +21,7 @@ void main() {
       return new EditorScreen(
         draft: model.message,
         enableSend: true,
+        onDraftChanged: model.handleDraftChanged,
         onSend: model.handleSubmit,
         onClose: model.handleClose,
       );
