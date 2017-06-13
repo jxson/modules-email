@@ -78,12 +78,7 @@ class _MessageTextInputState extends State<MessageTextInput> {
           hintText: 'Compose email',
           hintStyle: labelStyle,
         ),
-        // HACK(dayang): There is no way to specify unlimited lines as of now
-        // https://fuchsia.atlassian.net/browse/SO-189
-        //
-        // This is blockded by Flutter isssue #8027
-        // https://github.com/flutter/flutter/issues/8027
-        maxLines: 9999,
+        maxLines: null,
       ),
     );
   }
