@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:composer/widgets.dart';
 import 'package:email_models/models.dart';
-import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -17,7 +17,6 @@ void main() {
     await tester.pumpWidget(new MaterialApp(
       home: new Material(
         child: new RecipientInput(
-          inputLabel: 'To:',
           recipientList: <Mailbox>[
             new Mailbox(
               displayName: 'Coco',

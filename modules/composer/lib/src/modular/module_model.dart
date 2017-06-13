@@ -68,6 +68,13 @@ class EmailComposerModuleModel extends ModuleModel {
   ) {
     super.onReady(moduleContext, link, incomingServices);
 
+    log.fine('module ready');
+
+    emailContentProvider.ctrl.onConnectionError = () {
+      log.severe('email/content_provider client connection error');
+      showStackTrace();
+    };
+
     serviceImpl = new MessageComposerImpl();
 
     _outgoingServiceProvider.addServiceForName(
@@ -91,16 +98,21 @@ class EmailComposerModuleModel extends ModuleModel {
 
   @override
   void onStop() {
+    log.fine('module stopping...');
     serviceImpl.close();
     agentController.ctrl.close();
     componentContext.ctrl.close();
     emailContentProvider.ctrl.close();
     stateLink.ctrl.close();
+
     super.onStop();
   }
 
   @override
   void onNotify(String data) {
+    // TODO(SO-547): Chase down why `mm.onNotify()` is not being called.
+    log.fine('notify: $data');
+
     models.Message m = _parseLinkData(data);
     if (m != null) {
       // TODO(SO-503): This merging logic is kind of hacky
@@ -112,6 +124,7 @@ class EmailComposerModuleModel extends ModuleModel {
     }
 
     // Now that we have passed-down configuration, override with stored data
+    log.fine('getting state link');
     stateLink.get(null, this._mergeState);
   }
 
@@ -149,6 +162,8 @@ class EmailComposerModuleModel extends ModuleModel {
   }
 
   void _mergeState(String data) {
+    log.fine('merge state called $data');
+
     models.Message m = _parseLinkData(data);
     if (m != null) {
       // TODO(SO-503): This merging logic is kind of hacky
@@ -185,6 +200,8 @@ class EmailComposerModuleModel extends ModuleModel {
   }
 
   void _handleMessageUpdated(models.Message message) {
+    log.fine('updating message: $message');
+
     // Update our model based on new values, but keep IDs
     // TODO(SO-503): This merging logic is kind of hacky
     _message.recipientList = message.recipientList;
@@ -193,6 +210,8 @@ class EmailComposerModuleModel extends ModuleModel {
   }
 
   void _handleDraftSent(Status status) {
+    log.fine('sendDraft returned: $status');
+
     if (status.success) {
       // Notify listeners of the submit event
       serviceImpl.handleSubmit(_convertMessage(message));
@@ -232,8 +251,10 @@ class EmailComposerModuleModel extends ModuleModel {
     });
   }
 
-  /// Handle the submit event from the UI.
-  void handleSubmit(models.Message message) {
+  /// Handle send events from the UI.
+  void handleSend() {
+    log.fine('sending message');
+
     // Make sure the draft is up to date
     _handleMessageUpdated(message);
     // Cancel the update timer, if any.
@@ -241,14 +262,24 @@ class EmailComposerModuleModel extends ModuleModel {
       _draftChangeTimer.cancel();
     }
     Message fidlMessage = _convertMessage(_message);
+
     emailContentProvider.updateDraft(fidlMessage, (Message m) {
-      // Send the message
+      log.fine('sending message: $message');
       emailContentProvider.sendDraft(m.draftId, _handleDraftSent);
     });
   }
 
-  /// Handle the close event from the UI.
+  /// Handle "delete" events.
+  void handleDelete() {
+    log.fine('TODO(SO-548): Delete draft/message.');
+    // TODO(SO-548): Handle UI affordances for close, delete, and send.
+    moduleContext.done();
+  }
+
+  /// Handle "close" events.
   void handleClose() {
+    log.fine('TODO(SO-548): Close module.');
+    // TODO(SO-548): Handle UI affordances for close, delete, and send.
     moduleContext.done();
   }
 }

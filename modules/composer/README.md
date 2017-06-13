@@ -220,13 +220,15 @@ See the email story module's [`MessageListenerImpl`] for a more complete referen
 
 # Tests
 
-Module integration do not exist yet.
-
 Dart library and Flutter Widget tests are managed by the make tasks in [//apps/modules/email]. These unit style tests can be run from any directory with:
+
+Run with all the `//apps/modules/email` tests:
 
 ```shell
 make -c "${FUCHSIA_DIR}/apps/modules/email" test
 ```
+
+**NOTE:** Widget tests do not run in CQ due to, run locally when contributing.
 
 # License
 

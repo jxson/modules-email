@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:email_widgets/widgets.dart';
+import 'package:composer/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,39 +37,5 @@ void main() {
     await tester.idle();
     EditableText editableText = tester.widget(find.byType(EditableText));
     expect(editableText.controller.text, initialText);
-  });
-
-  testWidgets('Input text should use style specified in inputStyle',
-      (WidgetTester tester) async {
-    TextStyle style = new TextStyle(
-      color: Colors.pink[500],
-      fontSize: 30.0,
-    );
-
-    await tester.pumpWidget(new Material(
-      child: new SubjectInput(
-        inputStyle: style,
-      ),
-    ));
-    await tester.idle();
-    EditableText editableText = tester.widget(find.byType(EditableText));
-    expect(editableText.style, style);
-  });
-
-  testWidgets('Label text should use style specified in inputStyle',
-      (WidgetTester tester) async {
-    TextStyle style = new TextStyle(
-      color: Colors.pink[500],
-      fontSize: 30.0,
-    );
-
-    await tester.pumpWidget(new Material(
-      child: new SubjectInput(
-        labelStyle: style,
-      ),
-    ));
-    await tester.idle();
-    Text labelText = tester.widget(find.text('Subject'));
-    expect(labelText.style, style);
   });
 }

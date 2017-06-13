@@ -4,41 +4,27 @@
 
 import 'package:flutter/material.dart';
 
-import 'type_defs.dart';
-
-/// Input for email subject
-class SubjectInput extends StatefulWidget {
-  /// Initial text to prepopulate stuff
+/// Input for email message text
+class MessageTextInput extends StatefulWidget {
+  /// Initial text to prepopulate the input
   final String initialText;
 
   /// Callback function that is called everytime the subject text is changed
-  final StringCallback onTextChange;
-
-  /// TextStyle used for the input and recipient chips
-  ///
-  /// Defaults to the subhead style of the theme
-  final TextStyle inputStyle;
-
-  /// TextStyle used for the label
-  ///
-  /// Defaults to the inputStyle with a grey-500 color
-  final TextStyle labelStyle;
+  final ValueChanged<String> onTextChange;
 
   /// Constructor
-  SubjectInput({
+  MessageTextInput({
     Key key,
     this.initialText,
     this.onTextChange,
-    this.inputStyle,
-    this.labelStyle,
   })
       : super(key: key);
 
   @override
-  _SubjectInputState createState() => new _SubjectInputState();
+  _MessageTextInputState createState() => new _MessageTextInputState();
 }
 
-class _SubjectInputState extends State<SubjectInput> {
+class _MessageTextInputState extends State<MessageTextInput> {
   TextEditingController _controller;
 
   @override
@@ -48,7 +34,7 @@ class _SubjectInputState extends State<SubjectInput> {
   }
 
   @override
-  void didUpdateWidget(SubjectInput oldWidget) {
+  void didUpdateWidget(MessageTextInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialText != widget.initialText) {
       _controller.text = widget.initialText;
@@ -58,9 +44,8 @@ class _SubjectInputState extends State<SubjectInput> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    TextStyle inputStyle = widget.inputStyle ?? theme.textTheme.subhead;
-    TextStyle labelStyle =
-        widget.labelStyle ?? inputStyle.copyWith(color: Colors.grey[500]);
+    TextStyle inputStyle = theme.textTheme.subhead;
+    TextStyle labelStyle = inputStyle.copyWith(color: Colors.grey[500]);
 
     // TODO(dayang): Tapping on the entire container should bring focus to the
     // TextField.
@@ -69,24 +54,16 @@ class _SubjectInputState extends State<SubjectInput> {
     // This is blocked by Flutter Issue #7985
     // https://github.com/flutter/flutter/issues/7985
     return new Container(
-      alignment: FractionalOffset.centerLeft,
-      height: 56.0,
-      decoration: new BoxDecoration(
-        border: new Border(
-          bottom: new BorderSide(
-            color: Colors.grey[200],
-          ),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
       child: new TextField(
         controller: _controller,
         onChanged: widget.onTextChange,
         style: inputStyle,
         decoration: new InputDecoration.collapsed(
-          hintText: 'Subject',
+          hintText: 'Compose email',
           hintStyle: labelStyle,
         ),
+        maxLines: null,
       ),
     );
   }

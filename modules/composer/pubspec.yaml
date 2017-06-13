@@ -2,4 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-name: email_composer
+name: composer
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lib.logging:
+    path: ../../../../../lib/widgets/packages/logging
+  lib.widgets:
+    path: ../../../../../lib/widgets/packages/widgets
+  email_models:
+    path: ../../packages/email_models
+
+dev_dependencies:
+  test: any
+  flutter_test:
+    sdk: flutter
