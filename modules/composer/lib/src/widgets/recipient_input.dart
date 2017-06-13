@@ -4,8 +4,6 @@
 
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
-import 'package:widgets_meta/widgets_meta.dart';
 
 /// Callback type for updating the recipients of a new message
 typedef void RecipientsChangedCallback(List<Mailbox> recipientList);
@@ -20,32 +18,14 @@ class RecipientInput extends StatefulWidget {
   /// List of recipients. This is a copy of what is fed in.
   final List<Mailbox> recipientList;
 
-  /// Label for the recipient field. Ex. To, Cc Bcc...
-  final String inputLabel;
-
-  /// TextStyle used for the input and recipient chips
-  ///
-  /// Defaults to the subhead style of the theme
-  final TextStyle inputStyle;
-
-  /// TextStyle used for the label
-  ///
-  /// Defaults to the inputStyle with a grey-500 color
-  final TextStyle labelStyle;
-
   /// Creates a [RecipientInput] instance
   RecipientInput({
     Key key,
-    @required @ExampleValue('To:') this.inputLabel,
     this.onRecipientsChanged,
-    this.inputStyle,
-    this.labelStyle,
     List<Mailbox> recipientList,
   })
       : recipientList = recipientList ?? const <Mailbox>[],
-        super(key: key) {
-    assert(inputLabel != null);
-  }
+        super(key: key);
 
   @override
   _RecipientInputState createState() => new _RecipientInputState();
@@ -124,18 +104,14 @@ class _RecipientInputState extends State<RecipientInput> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    TextStyle inputStyle = widget.inputStyle ?? theme.textTheme.subhead;
-    TextStyle labelStyle =
-        widget.labelStyle ?? inputStyle.copyWith(color: Colors.grey[500]);
+    TextStyle inputStyle = theme.textTheme.subhead;
+    TextStyle labelStyle = inputStyle.copyWith(color: Colors.grey[500]);
 
     // Render Label
     List<Widget> rowChildren = <Widget>[
       new Container(
         margin: const EdgeInsets.only(right: 4.0),
-        child: new Text(
-          widget.inputLabel,
-          style: labelStyle,
-        ),
+        child: new Text('To:', style: labelStyle),
       ),
     ];
 
@@ -146,7 +122,7 @@ class _RecipientInputState extends State<RecipientInput> {
         child: new Chip(
           label: new Text(
             recipient.displayText,
-            style: widget.inputStyle,
+            style: inputStyle,
           ),
           onDeleted: () {
             _removeRecipient(recipient);
