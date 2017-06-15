@@ -107,6 +107,12 @@ class _RecipientInputState extends State<RecipientInput> {
   }
 
   @override
+  void didUpdateWidget(RecipientInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _recipientList = new List<Mailbox>.from(widget.recipientList);
+  }
+
+  @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     TextStyle inputStyle = widget.inputStyle ?? theme.textTheme.subhead;
