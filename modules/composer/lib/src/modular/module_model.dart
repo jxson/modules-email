@@ -14,6 +14,7 @@ import 'package:apps.modular.services.story/link.fidl.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart';
 import 'package:apps.modules.email.services.messages/message.fidl.dart';
 import 'package:apps.modules.email.services.messages/message_composer.fidl.dart';
+import 'package:email_composer/document.dart';
 import 'package:email_models/models.dart' as models;
 import 'package:lib.widgets/modular.dart';
 
@@ -47,10 +48,8 @@ class EmailComposerModuleModel extends ModuleModel {
   final models.Message _message = new models.Message(
       recipientList: <models.Mailbox>[], subject: '', text: '');
 
-  /// The draft associated with this composer instance. It's obtained from the
-  /// intial link.
-  Draft get draft => _draft;
-  Draft _draft = new Draft();
+  /// A proxy to the [Link] used for storing internal state.
+  final LinkProxy stateLink = new LinkProxy();
 
   @override
   ServiceProvider get outgoingServiceProvider => _outgoingServiceProvider;
@@ -70,6 +69,8 @@ class EmailComposerModuleModel extends ModuleModel {
       MessageComposer.serviceName,
     );
 
+    moduleContext.getLink('state', stateLink.ctrl.request());
+
     moduleContext.getComponentContext(componentContext.ctrl.request());
 
     componentContext.connectToAgent(
@@ -78,9 +79,6 @@ class EmailComposerModuleModel extends ModuleModel {
       agentController.ctrl.request(),
     );
     connectToService(contentProviderServices, emailContentProvider.ctrl);
-
-    Message fidlMessage = _convertMessage(message);
-    emailContentProvider.createDraft(fidlMessage, _handleDraftCreated);
 
     notifyListeners();
   }
@@ -91,23 +89,38 @@ class EmailComposerModuleModel extends ModuleModel {
     agentController.ctrl.close();
     componentContext.ctrl.close();
     emailContentProvider.ctrl.close();
+    stateLink.ctrl.close();
     super.onStop();
   }
 
   @override
-  void onNotify(String json) {
-    if (json == null || json == 'null') {
-      return;
+  void onNotify(String data) {
+    models.Message m = _parseLinkData(data);
+    if (m != null) {
+      // TODO(SO-503): This merging logic is kind of hacky
+      if (m.id != null) _message.id = m.id;
+      if (m.threadId != null) _message.threadId = m.threadId;
+      if (m.draftId != null) _message.draftId = m.draftId;
+      _handleMessageUpdated(m);
+      notifyListeners();
     }
 
-    dynamic decoded = JSON.decode(json);
-    if (decoded == null) {
-      return;
+    // Now that we have passed-down configuration, override with stored data
+    stateLink.get(null, this._mergeState);
+  }
+
+  models.Message _parseLinkData(String data) {
+    models.Message result;
+    if (data != null && data != 'null') {
+      dynamic json = JSON.decode(data);
+      if (json != null) {
+        String key = EmailComposerDocument.docroot;
+        if (json.containsKey(key)) {
+          result = new EmailComposerDocument.fromJson(json[key]).message;
+        }
+      }
     }
-    models.Message m =
-        new models.Message.fromJson(decoded['email-composer']['message']);
-    _handleMessageUpdated(m);
-    notifyListeners();
+    return result;
   }
 
   // Convert message from models format, used by UI clients, to fidl format,
@@ -125,14 +138,44 @@ class EmailComposerModuleModel extends ModuleModel {
     return new Message()
       ..id = message.id
       ..threadId = message.threadId
+      ..draftId = message.draftId
       ..json = data;
   }
 
-  void _handleDraftCreated(Draft draft, Message message) {
-    _draft = draft;
+  void _mergeState(String data) {
+    models.Message m = _parseLinkData(data);
+    if (m != null) {
+      // TODO(SO-503): This merging logic is kind of hacky
+      _message.id = m.id;
+      _message.threadId = m.threadId;
+      _message.draftId = m.draftId;
+      _message.recipientList = message.recipientList;
+      _message.subject = message.subject;
+      _message.text = message.text;
+    }
+    if (_message.draftId == null) {
+      Message fidlMessage = _convertMessage(_message);
+      emailContentProvider.createDraft(fidlMessage, _handleDraftCreated);
+    } else if (m == null) {
+      // We don't have any state stored, save it
+      _storeState();
+    }
+    notifyListeners();
+  }
+
+  void _handleDraftCreated(Message message) {
     // TODO(SO-503): This merging logic is kind of hacky
     _message.id = message.id;
     _message.threadId = message.threadId;
+    _message.draftId = message.draftId;
+    _storeState();
+    notifyListeners();
+  }
+
+  void _storeState() {
+    EmailComposerDocument doc = new EmailComposerDocument()..message = _message;
+    String data = JSON.encode(doc);
+    stateLink.updateObject(EmailComposerDocument.path, data);
   }
 
   void _handleMessageUpdated(models.Message message) {
@@ -177,9 +220,9 @@ class EmailComposerModuleModel extends ModuleModel {
     // Make sure the draft is up to date
     _handleMessageUpdated(message);
     Message fidlMessage = _convertMessage(_message);
-    emailContentProvider.updateDraft(draft.id, fidlMessage, (Message m) {
+    emailContentProvider.updateDraft(fidlMessage, (Message m) {
       // Send the message
-      emailContentProvider.sendDraft(draft.id, _handleDraftSent);
+      emailContentProvider.sendDraft(m.draftId, _handleDraftSent);
     });
   }
 

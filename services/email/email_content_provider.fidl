@@ -6,11 +6,11 @@ module email_content_provider;
 
 import "apps/modules/email/services/messages/message.fidl";
 
-// These data structures are (for now) modelled to represent Gmail's data model.
+// These data structures are (for now) modeled to represent Gmail's data model.
 
 struct Thread {
   string id;
-  // The actual thread data is represented in JSON for convinence when
+  // The actual thread data is represented in JSON for convenience when
   // communicating it over a Link.
   //
   // Thread Schema:
@@ -21,7 +21,7 @@ struct Thread {
   //   'messages': [<message>]
   // }
   //
-  // The message schema is more invovled; for now, see
+  // The message schema is more involved; for now, see
   // packages/models/lib/src/email/message.dart.
   // TODO(vardhan): Spec out the message format in JSON.
   string json_payload;
@@ -52,12 +52,6 @@ struct User {
   string json_payload;
 };
 
-struct Draft {
-  string id;
-  string message_id;
-  string thread_id;
-};
-
 struct Status {
   bool success;
   string? message;
@@ -74,7 +68,7 @@ interface EmailContentProvider {
   GetLabel(string id) => (Label? label);
 
   // Get a list of Thread objects.
-  Threads(string LabelID, int64 max) => (array<Thread> threads);
+  Threads(string label_id, int64 max) => (array<Thread> threads);
 
   // Get a single Thread by ID.
   GetThread(string id) => (Thread? thread);
@@ -83,11 +77,24 @@ interface EmailContentProvider {
   // and the given Story is focused.
   RegisterForUpdates(string story_id, string message_queue_token);
 
-  CreateDraft(email.Message message) => (Draft draft, email.Message message);
-  Drafts(int64 max) => (array<Draft> drafts);
+  // Create a draft with the provided initial content. The returned message
+  // will have its draft ID filled out, and will have a new message ID.
+  CreateDraft(email.Message message) => (email.Message message);
+
+  // Get all the drafts for the current user.
+  Drafts(int64 max) => (array<email.Message> drafts);
+
+  // Get the draft message with the given draft ID.
   GetDraftMessage(string draft_id) => (email.Message message);
-  UpdateDraft(string draft_id, email.Message message)
-    => (email.Message updated_message);
+
+  // Update the draft with the provided content. The returned message will
+  // have the same draft ID as the input, but a new message ID. (See
+  // https://developers.google.com/gmail/api/guides/drafts.)
+  UpdateDraft(email.Message message) => (email.Message updated_message);
+
+  // Send the draft with the given draft ID.
   SendDraft(string draft_id) => (Status status);
+
+  // Delete the draft with the given draft ID, immediately and permanently.
   DeleteDraft(string draft_id) => ();
 };

@@ -124,8 +124,16 @@ class EmailThreadListModuleModel extends ModuleModel {
 
     _doc.threadId = thread.id;
 
-    String data = JSON.encode(_doc);
-    link.updateObject(EmailLinkDocument.path, data);
+    // TODO(SO-516) Push the logic for handling drafts into the thread
+    // module, so that it can do things like render inline replies
+    if (_doc.labelId == 'DRAFT') {
+      if (thread.lastMessage.draftId != null) {
+        _launchComposer(thread.lastMessage);
+      }
+    } else {
+      String data = JSON.encode(_doc);
+      link.updateObject(EmailLinkDocument.path, data);
+    }
 
     notifyListeners();
   }
@@ -145,10 +153,20 @@ class EmailThreadListModuleModel extends ModuleModel {
   ///
   /// TODO(SO-467): use story shell API's to launch email modules.
   void launchComposer() {
-    _log('launching email/composer via link');
+    _launchComposer(null);
+  }
+
+  void _launchComposer(Message message) {
     EmailComposerDocument doc = new EmailComposerDocument();
-    String data = JSON.encode(doc);
-    link.updateObject(EmailComposerDocument.path, data);
+    doc.message = message;
+    // TODO(FW-208): Set the entire structure at once to avoid
+    // issues with how notifications are sequenced
+    Map<String, dynamic> contents = <String, dynamic>{
+      EmailComposerDocument.docroot: doc.toJson(),
+      EmailLinkDocument.docroot: _doc.toJson(),
+    };
+    String data = JSON.encode(contents);
+    link.updateObject(null, data);
   }
 
   /// Fetches data needed to render UI.
@@ -158,7 +176,7 @@ class EmailThreadListModuleModel extends ModuleModel {
     this._loading = true;
     notifyListeners();
 
-    // Fetch Label and Thread in paralell.
+    // Fetch Label and Thread in parallel.
     Future.wait(<Future<Null>>[
       getLabel(_doc.labelId).then((Label label) {
         this._title = label.name;
@@ -192,7 +210,7 @@ class EmailThreadListModuleModel extends ModuleModel {
     return completer.future;
   }
 
-  /// Get a [Thread]s from the content provider.
+  /// Get [Thread]s for the given label from the content provider.
   Future<Map<String, Thread>> getThreads(String labelId) {
     Completer<Map<String, Thread>> completer =
         new Completer<Map<String, Thread>>();

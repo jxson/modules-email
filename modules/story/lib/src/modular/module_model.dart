@@ -195,12 +195,12 @@ class EmailStoryModuleModel extends ModuleModel {
 
   /// Callback handler for [MessageListenerImpl.onSubmitted].
   void handleMessageSubmitted(Message message) {
-    print('email/story: send message not implemented: ${message?.json}');
+    _log('message sent: ${message?.json}');
   }
 
   /// Callback handler for [MessageListenerImpl.onChanged].
   void handleMessageChanged(Message message) {
-    print('email/story: change event not implemented.');
+    _log('change event not implemented.');
   }
 
   /// Callback handler for handling done state in [ModuleWatcher.onStateChange].

@@ -23,6 +23,9 @@ class Message {
   /// Unique Identifier for the thread that contains this message
   String threadId;
 
+  /// If this message is a draft, its Unique Identifier, otherwise null
+  String draftId;
+
   /// List of recipient mailboxes
   List<Mailbox> recipientList;
 
@@ -61,6 +64,7 @@ class Message {
   Message({
     this.id,
     this.threadId,
+    this.draftId,
     this.sender,
     this.senderProfileUrl,
     this.subject,
@@ -98,6 +102,7 @@ class Message {
     return new Message(
       id: json['id'],
       threadId: json['threadId'],
+      draftId: json['draftId'],
       sender: new Mailbox.fromJson(json['sender']),
       senderProfileUrl: json['senderProfileUrl'],
       subject: json['subject'],
@@ -121,6 +126,7 @@ class Message {
     Map<String, dynamic> json = <String, dynamic>{
       'id': id,
       'threadId': threadId,
+      'draftId': draftId,
       'sender': sender?.toJson(),
       'senderProfileUrl': senderProfileUrl,
       'subject': subject,

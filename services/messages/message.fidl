@@ -11,6 +11,8 @@ struct Message {
   string? id;
   // The ID of the thread this message belongs to.
   string? threadId;
+  // If this message is a draft, its draft ID, otherwise null.
+  string? draftId;
   // JSON encoded string content controlled by the Message model defined in
   // "packages/email_models/lib/src/message.dart".
   string json;

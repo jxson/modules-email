@@ -92,7 +92,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
       _bindings.forEach((ecp.EmailContentProviderBinding b) => b.close());
 
   /// Preloads the results for [me] and [labels]. Threads for each label and
-  /// loaded on demand. Kicks of periodic email updates.
+  /// loaded on demand. Kicks off periodic email updates.
   Future<Null> init() async {
     EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
@@ -153,6 +153,25 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
     List<Thread> threads = await _api.threads(labelId: labelId, max: max);
+
+    if (labelId == 'DRAFT') {
+      final gmail.GmailApi _gmail = await _gmailApi();
+      gmail.ListDraftsResponse response =
+          await _gmail.users.drafts.list('me', maxResults: max);
+      Map<String, String> draftIds = <String, String>{};
+      for (gmail.Draft d in response.drafts) {
+        draftIds[d.message.id] = d.id;
+      }
+      for (Thread t in threads) {
+        for (String id in t.messages.keys) {
+          if (draftIds[id] != null) {
+            t.messages[id].draftId = draftIds[id];
+          } else {
+            _log('Couldn\'t find any draft ID for message $id');
+          }
+        }
+      }
+    }
 
     _log('fetched ${threads.length} emails.');
 
@@ -239,10 +258,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     return api.gmailApi;
   }
 
-  m.Message _fidlMessageFromGmail(gmail.Message g) {
+  m.Message _fidlMessageFromGmail(String draftId, gmail.Message g) {
     final m.Message message = new m.Message();
     message.id = g.id;
     message.threadId = g.threadId;
+    message.draftId = draftId;
 
     final Message messageModel = _message(g);
     message.json = JSON.encode(messageModel.toJson());
@@ -283,28 +303,23 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   }
 
   @override
-  Future<Null> createDraft(m.Message message,
-      void callback(ecp.Draft draft, m.Message message)) async {
+  Future<Null> createDraft(
+      m.Message message, void callback(m.Message message)) async {
     final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = new gmail.Draft()
       ..message = _gmailMessageFromFidl(message);
     final gmail.Draft newDraft =
         await _gmail.users.drafts.create(gmailDraft, 'me');
-    callback(
-        new ecp.Draft()
-          ..id = newDraft.id
-          ..messageId = newDraft.message.id
-          ..threadId = newDraft.message.threadId,
-        _fidlMessageFromGmail(newDraft.message));
+    callback(_fidlMessageFromGmail(newDraft.id, newDraft.message));
   }
 
   @override
-  Future<Null> drafts(int max, void callback(List<ecp.Draft> drafts)) async {
+  Future<Null> drafts(int max, void callback(List<m.Message> drafts)) async {
     final gmail.GmailApi _gmail = await _gmailApi();
     gmail.ListDraftsResponse response =
         await _gmail.users.drafts.list('me', maxResults: max);
-    callback(response.drafts.map((gmail.Draft draft) => new ecp.Draft.init(
-        draft.id, draft.message.id, draft.message.threadId)));
+    callback(response.drafts.map(
+        (gmail.Draft draft) => _fidlMessageFromGmail(draft.id, draft.message)));
   }
 
   @override
@@ -312,19 +327,19 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
       String draftId, void callback(m.Message message)) async {
     final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = await _gmail.users.drafts.get('me', draftId);
-    callback(_fidlMessageFromGmail(gmailDraft.message));
+    callback(_fidlMessageFromGmail(gmailDraft.id, gmailDraft.message));
   }
 
   @override
-  Future<Null> updateDraft(String draftId, m.Message message,
-      void callback(m.Message updatedMessage)) async {
+  Future<Null> updateDraft(
+      m.Message message, void callback(m.Message updatedMessage)) async {
     final gmail.GmailApi _gmail = await _gmailApi();
     final gmail.Draft gmailDraft = new gmail.Draft()
-      ..id = draftId
+      ..id = message.draftId
       ..message = _gmailMessageFromFidl(message);
     final gmail.Draft updatedDraft =
-        await _gmail.users.drafts.update(gmailDraft, 'me', draftId);
-    callback(_fidlMessageFromGmail(updatedDraft.message));
+        await _gmail.users.drafts.update(gmailDraft, 'me', message.draftId);
+    callback(_fidlMessageFromGmail(updatedDraft.id, updatedDraft.message));
   }
 
   @override
