@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:application.lib.app.dart/app.dart';
@@ -20,6 +21,8 @@ import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
 
 import 'message_composer_impl.dart';
+
+const Duration _kUpdateDraftDelay = const Duration(seconds: 1);
 
 /// The [ModuleModel] for the EmailStory.
 class EmailComposerModuleModel extends ModuleModel {
@@ -51,6 +54,8 @@ class EmailComposerModuleModel extends ModuleModel {
 
   /// A proxy to the [Link] used for storing internal state.
   final LinkProxy stateLink = new LinkProxy();
+
+  Timer _draftChangeTimer;
 
   @override
   ServiceProvider get outgoingServiceProvider => _outgoingServiceProvider;
@@ -214,12 +219,27 @@ class EmailComposerModuleModel extends ModuleModel {
   /// Handle the draft changed event from the UI.
   void handleDraftChanged(models.Message message) {
     _handleMessageUpdated(message);
+
+    // Cancel the last timer, if any.
+    if (_draftChangeTimer != null && _draftChangeTimer.isActive) {
+      _draftChangeTimer.cancel();
+    }
+    _draftChangeTimer = new Timer(_kUpdateDraftDelay, () {
+      Message fidlMessage = _convertMessage(_message);
+      emailContentProvider.updateDraft(fidlMessage, (Message m) {
+        log.severe('Failed to update draft.');
+      });
+    });
   }
 
   /// Handle the submit event from the UI.
   void handleSubmit(models.Message message) {
     // Make sure the draft is up to date
     _handleMessageUpdated(message);
+    // Cancel the update timer, if any.
+    if (_draftChangeTimer != null && _draftChangeTimer.isActive) {
+      _draftChangeTimer.cancel();
+    }
     Message fidlMessage = _convertMessage(_message);
     emailContentProvider.updateDraft(fidlMessage, (Message m) {
       // Send the message

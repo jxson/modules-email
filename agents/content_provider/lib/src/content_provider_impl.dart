@@ -334,9 +334,18 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     final gmail.Draft gmailDraft = new gmail.Draft()
       ..id = message.draftId
       ..message = _gmailMessageFromFidl(message);
-    final gmail.Draft updatedDraft =
-        await _gmail.users.drafts.update(gmailDraft, 'me', message.draftId);
-    callback(_fidlMessageFromGmail(updatedDraft.id, updatedDraft.message));
+    gmail.Draft updatedDraft;
+    try {
+      updatedDraft =
+          await _gmail.users.drafts.update(gmailDraft, 'me', message.draftId);
+    } catch (e) {
+      log.fine('exception: $e');
+    }
+    if (updatedDraft != null) {
+      callback(_fidlMessageFromGmail(updatedDraft.id, updatedDraft.message));
+    } else {
+      callback(null);
+    }
   }
 
   @override
