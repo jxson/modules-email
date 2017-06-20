@@ -59,10 +59,19 @@ class _RecipientInputState extends State<RecipientInput> {
   /// The 'in progress' text of the new recipient being composed in the input
   final TextEditingController _controller = new TextEditingController();
 
+  /// The [FocusNode] for the [TextField].
+  final FocusNode _textFocus = new FocusNode();
+
   @override
   void initState() {
     super.initState();
     _recipientList = new List<Mailbox>.from(widget.recipientList);
+    _textFocus.addListener(() {
+      if (!_textFocus.hasFocus) {
+        // Text input lost focus.
+        _checkForRecipient(_controller.text);
+      }
+    });
   }
 
   void _notifyRecipientsChanged() {
@@ -151,6 +160,7 @@ class _RecipientInputState extends State<RecipientInput> {
       child: new Container(
         child: new TextField(
           controller: _controller,
+          focusNode: _textFocus,
           onChanged: _handleInputChange,
           onSubmitted: _handleInputSubmit,
           style: inputStyle,
