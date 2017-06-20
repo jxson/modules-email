@@ -44,7 +44,7 @@ class EmailComposerModuleModel extends ModuleModel {
   final ComponentContextProxy componentContext = new ComponentContextProxy();
 
   /// The message associated with this composer instance. It's obtained from the
-  /// intial link.
+  /// initial link.
   models.Message get message => _message;
   final models.Message _message = new models.Message(
       recipientList: <models.Mailbox>[], subject: '', text: '');
