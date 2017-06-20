@@ -13,16 +13,13 @@ import 'package:apps.modular.services.component/component_context.fidl.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as ecp;
 import 'package:lib.fidl.dart/bindings.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.modular/modular.dart';
 import 'package:meta/meta.dart';
 
 import 'src/content_provider_impl.dart';
 
 EmailContentProviderAgent _agent;
-
-void _log(String msg) {
-  print('[email_content_provider:main] $msg');
-}
 
 /// An implementation of the [Agent] interface, which manages the connection to
 /// the email server and handles email related API call requests.
@@ -41,7 +38,7 @@ class EmailContentProviderAgent extends AgentImpl {
     TokenProvider tokenProvider,
     ServiceProviderImpl outgoingServices,
   ) async {
-    _log('onReady start.');
+    log.fine('onReady start.');
 
     // Get the ProposalPublisher
     ProposalPublisherProxy proposalPublisher = new ProposalPublisherProxy();
@@ -58,7 +55,7 @@ class EmailContentProviderAgent extends AgentImpl {
 
     outgoingServices.addServiceForName(
       (InterfaceRequest<ecp.EmailContentProvider> request) {
-        _log('Received an EmailContentProvider request');
+        log.fine('Received an EmailContentProvider request');
         _emailContentProviderImpl.addBinding(request);
       },
       ecp.EmailContentProvider.serviceName,
@@ -73,7 +70,7 @@ class EmailContentProviderAgent extends AgentImpl {
 
     await _emailContentProviderImpl.init();
 
-    _log('onReady end.');
+    log.fine('onReady end.');
   }
 
   @override
@@ -89,6 +86,8 @@ class EmailContentProviderAgent extends AgentImpl {
 
 /// Main entry point.
 Future<Null> main(List<String> args) async {
+  setupLogger(name: 'email/agent');
+
   _agent = new EmailContentProviderAgent(
     applicationContext: new ApplicationContext.fromStartupInfo(),
   );

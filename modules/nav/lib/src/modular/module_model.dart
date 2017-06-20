@@ -14,11 +14,8 @@ import 'package:apps.modules.email.services.email/email_content_provider.fidl.da
     as cp;
 import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
-
-void _log(String message) {
-  print('[email/nav]: $message');
-}
 
 /// The [ModuleModel] for the EmailStory.
 ///
@@ -73,13 +70,13 @@ class EmailNavModuleModel extends ModuleModel {
       getUser().then((User user) {
         _user = user;
         notifyListeners();
-      }).catchError((Error error) => _log('error fetching user: $error')),
+      }).catchError((Error error) => log.severe('error fetching user', error)),
       getLabels().then((Map<String, Label> labels) {
         _labels = labels;
         notifyListeners();
-      }).catchError((Error error) => _log('error fetching user: $error')),
+      }).catchError((Error error) => log.severe('error fetching user', error)),
     ]).then((List<Null> results) {
-      _log('ready');
+      log.fine('ready');
 
       componentContext.ctrl.close();
       emailContentProvider.ctrl.close();
@@ -106,10 +103,10 @@ class EmailNavModuleModel extends ModuleModel {
   Future<User> getUser() {
     Completer<User> completer = new Completer<User>();
 
-    _log('fetching user');
+    log.fine('fetching user');
     // TODO(SO-392): Calls should accomodate possible errors.
     emailContentProvider.me((cp.User res) {
-      _log('got user');
+      log.fine('got user');
 
       try {
         Map<String, String> json = JSON.decode(res.jsonPayload);
@@ -131,9 +128,9 @@ class EmailNavModuleModel extends ModuleModel {
         new Completer<Map<String, Label>>();
     Map<String, Label> labels = <String, Label>{};
 
-    _log('fetching labels');
+    log.fine('fetching labels');
     emailContentProvider.labels((List<cp.Label> list) {
-      _log('got labels');
+      log.fine('got labels');
 
       // Because it is possible to error while looping over the results an
       // iterator is used to control the loop in the error case.

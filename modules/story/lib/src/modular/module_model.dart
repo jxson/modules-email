@@ -18,6 +18,7 @@ import 'package:email_composer/document.dart';
 import 'package:lib.fidl.dart/bindings.dart'
     show InterfaceHandle, InterfaceRequest, InterfacePair;
 import 'package:lib.fidl.dart/core.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
 
 import 'message_listener_impl.dart';
@@ -27,10 +28,6 @@ final String _kEmailSessionUrl = 'file:///system/apps/email/session';
 final String _kEmailNavUrl = 'file:///system/apps/email/nav';
 final String _kEmailThreadListUrl = 'file:///system/apps/email/thread_list';
 final String _kEmailThreadUrl = 'file:///system/apps/email/thread';
-
-void _log(String message) {
-  print('[email/story - model]: $message');
-}
 
 class _DoneWatcher extends ModuleWatcher {
   VoidCallback onDone;
@@ -127,7 +124,7 @@ class EmailStoryModuleModel extends ModuleModel {
     // module name is the module url
     String name = url;
 
-    _log('Starting sub-module: $url');
+    log.fine('Starting sub-module: $url');
     moduleContext.startModule(
       name,
       url,
@@ -137,7 +134,7 @@ class EmailStoryModuleModel extends ModuleModel {
       moduleControllerPair.passRequest(),
       viewOwnerPair.passRequest(),
     );
-    _log('Started sub-module: $url');
+    log.fine('Started sub-module: $url');
 
     return viewOwnerPair.passHandle();
   }
@@ -195,12 +192,12 @@ class EmailStoryModuleModel extends ModuleModel {
 
   /// Callback handler for [MessageListenerImpl.onSubmitted].
   void handleMessageSubmitted(Message message) {
-    _log('message sent: ${message?.json}');
+    log.fine('message sent: ${message?.json}');
   }
 
   /// Callback handler for [MessageListenerImpl.onChanged].
   void handleMessageChanged(Message message) {
-    _log('change event not implemented.');
+    log.warning('change event not implemented.');
   }
 
   /// Callback handler for handling done state in [ModuleWatcher.onStateChange].

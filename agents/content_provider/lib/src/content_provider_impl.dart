@@ -19,6 +19,7 @@ import 'package:email_api/email_api.dart';
 import 'package:email_models/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:lib.fidl.dart/bindings.dart' as bindings;
+import 'package:lib.logging/logging.dart';
 import 'package:models/user.dart';
 import 'package:util/extract_uri.dart';
 
@@ -26,10 +27,6 @@ import 'api.dart';
 
 /// Period at which we check for new email.
 const int kRefreshPeriodSecs = 60;
-
-void _log(String msg) {
-  print('[email_content_provider] $msg');
-}
 
 /// This datastructure is used to keep a record of subscribers that want email
 /// updates. This is constructed when
@@ -83,7 +80,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   /// [EmailContentProviderImpl] object needs to be created per interface
   /// request.
   void addBinding(bindings.InterfaceRequest<ecp.EmailContentProvider> request) {
-    _log('New client for EmailContentProvider');
+    log.fine('New client for EmailContentProvider');
     _bindings.add(new ecp.EmailContentProviderBinding()..bind(this, request));
   }
 
@@ -167,22 +164,22 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
           if (draftIds[id] != null) {
             t.messages[id].draftId = draftIds[id];
           } else {
-            _log('Couldn\'t find any draft ID for message $id');
+            log.fine('Couldn\'t find any draft ID for message $id');
           }
         }
       }
     }
 
-    _log('fetched ${threads.length} emails.');
+    log.fine('fetched ${threads.length} emails.');
 
     _labelToThreads[labelId].complete(threads);
   }
 
   @override
   Future<Null> me(void callback(ecp.User user)) async {
-    _log('* me() called');
+    log.fine('* me() called');
     callback(await _user.future);
-    _log('* me() called back');
+    log.fine('* me() called back');
   }
 
   @override
@@ -238,11 +235,11 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   @override
   void registerForUpdates(String storyId, String messageQueueToken) {
-    _log('* registerForUpdates($storyId, $messageQueueToken) called');
+    log.fine('* registerForUpdates($storyId, $messageQueueToken) called');
 
     // already exists?
     if (_notificationSubscribers.containsKey(messageQueueToken)) {
-      _log('$messageQueueToken already subscribed to notifications');
+      log.fine('$messageQueueToken already subscribed to notifications');
       return;
     }
 

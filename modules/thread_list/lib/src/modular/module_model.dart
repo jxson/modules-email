@@ -15,11 +15,8 @@ import 'package:apps.modules.email.services.email/email_content_provider.fidl.da
 import 'package:email_composer/document.dart';
 import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
-
-void _log(String message) {
-  print('[email/thread_list - model]: $message');
-}
 
 /// The [ModuleModel] for the EmailStory.
 class EmailThreadListModuleModel extends ModuleModel {
@@ -141,7 +138,7 @@ class EmailThreadListModuleModel extends ModuleModel {
   /// Method for handling events triggered by the UI when the "archive thread"
   /// affordance is used.
   void handleThreadArchived(Thread thread) {
-    _log('TODO: handle thread archived "${thread.id}"');
+    log.info('TODO: handle thread archived "${thread.id}"');
   }
 
   /// Method to trigger the launching of the email/composer module from the
@@ -171,7 +168,7 @@ class EmailThreadListModuleModel extends ModuleModel {
 
   /// Fetches data needed to render UI.
   void _update() {
-    _log('fetching data for UI update');
+    log.fine('fetching data for UI update');
 
     this._loading = true;
     notifyListeners();
@@ -187,7 +184,7 @@ class EmailThreadListModuleModel extends ModuleModel {
         _threads = threads;
       }),
     ]).then((List<Null> results) {
-      _log('data fetched, rendering.');
+      log.fine('data fetched, rendering.');
       this._loading = false;
       notifyListeners();
     });
@@ -197,9 +194,9 @@ class EmailThreadListModuleModel extends ModuleModel {
   Future<Label> getLabel(String id) {
     Completer<Label> completer = new Completer<Label>();
 
-    _log('fetching label "$id"');
+    log.fine('fetching label "$id"');
     emailContentProvider.getLabel(id, (cp.Label label) {
-      _log('got label "$id"');
+      log.fine('got label "$id"');
 
       completer.complete(new Label(
         id: label.id,
@@ -215,11 +212,11 @@ class EmailThreadListModuleModel extends ModuleModel {
     Completer<Map<String, Thread>> completer =
         new Completer<Map<String, Thread>>();
 
-    _log('fetching threads for ${labelId}');
+    log.fine('fetching threads for ${labelId}');
 
     // TODO(SO-387): Paging to allow loading of more than 20
     emailContentProvider.threads(labelId, 20, (List<cp.Thread> results) {
-      _log('fetched threads for ${labelId}');
+      log.fine('fetched threads for ${labelId}');
 
       Map<String, Thread> threads = <String, Thread>{};
 

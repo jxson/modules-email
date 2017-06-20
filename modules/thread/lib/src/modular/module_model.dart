@@ -14,11 +14,8 @@ import 'package:apps.modules.email.services.email/email_content_provider.fidl.da
     as cp;
 import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
-
-void _log(String message) {
-  print('[email/thread - model]: $message');
-}
 
 /// The [ModuleModel] for the email thread/detail view.
 class EmailThreadModuleModel extends ModuleModel {
@@ -120,7 +117,7 @@ class EmailThreadModuleModel extends ModuleModel {
     }
 
     if (labelUpdated) {
-      _log('Label changed, removing unrelated thread.');
+      log.fine('Label changed, removing unrelated thread.');
       _thread = null;
       notifyListeners();
     }
@@ -139,37 +136,37 @@ class EmailThreadModuleModel extends ModuleModel {
 
   /// Archive thread.
   void handleArchive(Thread thread) {
-    _log('TODO: handle archive.');
+    log.info('TODO: handle archive.');
   }
 
   /// Move thread to trash.
   void handleTrash(Thread thread) {
-    _log('TODO: handle fowarding messages');
+    log.info('TODO: handle fowarding messages');
   }
 
   /// Respond to the forward button being pressed.
   void handleForward(Message message) {
-    _log('TODO: handle fowarding messages');
+    log.info('TODO: handle fowarding messages');
   }
 
   /// Respond to the forward button being pressed.
   void handleReplyAll(Message message) {
-    _log('TODO: handle reply all');
+    log.info('TODO: handle reply all');
   }
 
   /// Respond to the forward button being pressed.
   void handleReply(Message message) {
-    print('TODO: handle reply');
+    log.info('TODO: handle reply');
   }
 
   /// Get a [Thread]s from the content provider.
   Future<Thread> getThread(String id) {
     Completer<Thread> completer = new Completer<Thread>();
 
-    _log('fetching thread ${id}');
+    log.fine('fetching thread ${id}');
 
     emailContentProvider.getThread(id, (cp.Thread result) {
-      _log('got thread ${id}');
+      log.fine('got thread ${id}');
       String data = result.jsonPayload;
 
       try {

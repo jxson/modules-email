@@ -16,6 +16,7 @@ import 'package:apps.modules.email.services.messages/message.fidl.dart';
 import 'package:apps.modules.email.services.messages/message_composer.fidl.dart';
 import 'package:email_composer/document.dart';
 import 'package:email_models/models.dart' as models;
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
 
 import 'message_composer_impl.dart';
@@ -132,7 +133,7 @@ class EmailComposerModuleModel extends ModuleModel {
       data = JSON.encode(message);
     } catch (err) {
       // TODO(SO-266): Handle errors appropriately
-      print('Error converting message: $err');
+      log.severe('Error converting message', err);
     }
 
     return new Message()
@@ -206,7 +207,7 @@ class EmailComposerModuleModel extends ModuleModel {
       moduleContext.done();
     } else {
       // TODO(SO-266): Handle errors appropriately
-      print('Error sending message: ' + status.message);
+      log.severe('Error sending message: ' + status.message);
     }
   }
 

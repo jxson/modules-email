@@ -15,14 +15,11 @@ import 'package:apps.mozart.services.views/view_token.fidl.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.fidl.dart/bindings.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
 import 'package:meta/meta.dart';
 
 const double _kHeight = 800.0;
-
-void _log(String message) {
-  print('[email/thread - resolver] $message');
-}
 
 /// Used to resolve modules to embed from any links in the message content.
 class ModularResolverModel extends ResolverModel {
@@ -100,7 +97,7 @@ class ModularResolverModel extends ResolverModel {
       return requests[id];
     }
 
-    _log('resolving module for "$uri"');
+    log.fine('resolving module for "$uri"');
 
     String contract = 'view';
     String data = JSON.encode(decomposeUri(uri));
@@ -112,7 +109,7 @@ class ModularResolverModel extends ResolverModel {
 
       if (module == null) {
         requests[id].status = ModuleRequestStatus.notFound;
-        _log('module not found for "$uri"');
+        log.warning('module not found for "$uri"');
         return;
       }
 
@@ -132,7 +129,7 @@ class ModularResolverModel extends ResolverModel {
       requests[id].status = ModuleRequestStatus.resolved;
       requests[id].connection = connection;
 
-      _log('module resolved for "$uri"');
+      log.fine('module resolved for "$uri"');
       notifyListeners();
     });
 

@@ -5,11 +5,14 @@
 import 'package:application.lib.app.dart/app.dart';
 import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
 
 import 'src/modular/module_model.dart';
 
 void main() {
+  setupLogger(name: 'email/composer');
+
   EmailComposerModuleModel model = new EmailComposerModuleModel();
 
   ModuleWidget<EmailComposerModuleModel> moduleWidget =
