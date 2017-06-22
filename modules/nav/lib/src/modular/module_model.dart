@@ -9,13 +9,17 @@ import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.agent.agent_controller/agent_controller.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
+import 'package:apps.modular.services.module/module_controller.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
+import 'package:apps.modular.services.surface/surface.fidl.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as cp;
 import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
 import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
+
+final String _kEmailThreadListUrl = 'file:///system/apps/email/thread_list';
 
 /// The [ModuleModel] for the EmailStory.
 ///
@@ -32,6 +36,10 @@ class EmailNavModuleModel extends ModuleModel {
   /// A proxy to the [ServiceProvider], used to connect to the agent.
   final ServiceProviderProxy contentProviderServices =
       new ServiceProviderProxy();
+
+  /// A proxy to the ModuleController for thread list module
+  final ModuleControllerProxy threadListController =
+      new ModuleControllerProxy();
 
   /// Getter for the [User] object retreived from the [emailContentProvider].
   User get user => _user;
@@ -54,6 +62,19 @@ class EmailNavModuleModel extends ModuleModel {
     ServiceProvider incomingServices,
   ) {
     super.onReady(moduleContext, link, incomingServices);
+    moduleContext.startModuleInShell(
+      _kEmailThreadListUrl,
+      _kEmailThreadListUrl,
+      null, // Pass the stories default link to child modules.
+      null,
+      null,
+      threadListController.ctrl.request(),
+      new SurfaceRelation()
+        ..arrangement = SurfaceArrangement.copresent
+        ..dependency = SurfaceDependency.dependent
+        ..emphasis = 3.0 / 2.0,
+      true,
+    );
 
     ComponentContextProxy componentContext = new ComponentContextProxy();
     moduleContext.getComponentContext(componentContext.ctrl.request());
@@ -165,13 +186,13 @@ class EmailNavModuleModel extends ModuleModel {
 
   /// Method to handle label selection triggered by the UI.
   void handleSelectedLabel(Label label) {
-    if (label.id == selectedLabelId) return;
+    if (label.id != selectedLabelId) {
+      _doc.labelId = label.id;
 
-    _doc.labelId = label.id;
-
-    String data = JSON.encode(_doc);
-    link.updateObject(EmailLinkDocument.path, data);
-
-    notifyListeners();
+      String data = JSON.encode(_doc);
+      link.updateObject(EmailLinkDocument.path, data);
+      notifyListeners();
+    }
+    threadListController.focus();
   }
 }

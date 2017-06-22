@@ -8,8 +8,6 @@ group("modules") {
     "composer:composer_component",
     "nav",
     "nav:nav_component",
-    "story",
-    "story:story_component",
     "thread",
     "thread:thread_component",
     "thread_list",

@@ -9,14 +9,34 @@ import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.agent.agent_controller/agent_controller.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
+import 'package:apps.modular.services.module/module_controller.fidl.dart';
+import 'package:apps.modular.services.module/module_state.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
+import 'package:apps.modular.services.surface/surface.fidl.dart';
 import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
     as cp;
 import 'package:email_composer/document.dart';
 import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
+import 'package:lib.fidl.dart/core.dart';
 import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/modular.dart';
+
+final String _kEmailThreadUrl = 'file:///system/apps/email/thread';
+final String _kEmailComposerUrl = 'file:///system/apps/email/composer';
+
+class _DoneWatcher extends ModuleWatcher {
+  VoidCallback onDone;
+  _DoneWatcher({
+    this.onDone,
+  });
+  @override
+  void onStateChange(ModuleState newState) {
+    if (newState == ModuleState.done) {
+      this.onDone();
+    }
+  }
+}
 
 /// The [ModuleModel] for the EmailStory.
 class EmailThreadListModuleModel extends ModuleModel {
@@ -33,6 +53,15 @@ class EmailThreadListModuleModel extends ModuleModel {
 
   /// A proxy to the [ComponentContext], used to connect to the agent.
   final ComponentContextProxy componentContext = new ComponentContextProxy();
+
+  /// A proxy to the ModuleController for thread module
+  final ModuleControllerProxy threadController = new ModuleControllerProxy();
+
+  /// A proxy to the ModuleController for compose module
+  final ModuleControllerProxy composeController = new ModuleControllerProxy();
+
+  /// A watcher for the compose module
+  final ModuleWatcherBinding watcherBinding = new ModuleWatcherBinding();
 
   /// The [Thread] objects to display: retreived from the
   /// [emailContentProvider].
@@ -60,6 +89,19 @@ class EmailThreadListModuleModel extends ModuleModel {
     ServiceProvider incomingServices,
   ) {
     super.onReady(moduleContext, link, incomingServices);
+    moduleContext.startModuleInShell(
+      _kEmailThreadUrl,
+      _kEmailThreadUrl,
+      null, // Pass the stories default link to child modules.
+      null,
+      null,
+      threadController.ctrl.request(),
+      new SurfaceRelation()
+        ..arrangement = SurfaceArrangement.copresent
+        ..dependency = SurfaceDependency.dependent
+        ..emphasis = 4.0 / 3.0,
+      false,
+    );
 
     moduleContext.getComponentContext(componentContext.ctrl.request());
 
@@ -117,8 +159,6 @@ class EmailThreadListModuleModel extends ModuleModel {
   /// Method for handling events triggered by the UI when a [Thread] is
   /// selected.
   void handleThreadSelected(Thread thread) {
-    if (thread.id == _doc.threadId) return;
-
     _doc.threadId = thread.id;
 
     // TODO(SO-516) Push the logic for handling drafts into the thread
@@ -130,7 +170,9 @@ class EmailThreadListModuleModel extends ModuleModel {
     } else {
       String data = JSON.encode(_doc);
       link.updateObject(EmailLinkDocument.path, data);
+      threadController.focus();
     }
+    composeController.defocus();
 
     notifyListeners();
   }
@@ -164,6 +206,26 @@ class EmailThreadListModuleModel extends ModuleModel {
     };
     String data = JSON.encode(contents);
     link.updateObject(null, data);
+    if (composeController.ctrl.isBound) {
+      composeController.focus();
+    } else {
+      moduleContext.startModuleInShell(
+        _kEmailComposerUrl,
+        _kEmailComposerUrl,
+        null, // Pass the stories default link to child modules.
+        null,
+        null,
+        composeController.ctrl.request(),
+        new SurfaceRelation()
+          ..arrangement = SurfaceArrangement.copresent
+          ..dependency = SurfaceDependency.dependent
+          ..emphasis = 4.0 / 3.0,
+        true,
+      );
+      composeController.watch(watcherBinding
+          .wrap(new _DoneWatcher(onDone: () => composeController.stop(() {}))));
+    }
+    threadController.defocus();
   }
 
   /// Fetches data needed to render UI.
