@@ -344,7 +344,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
     if (updatedDraft != null) {
       callback(_fidlMessageFromGmail(updatedDraft.id, updatedDraft.message));
     } else {
-      callback(null);
+      callback(_fidlMessageFromGmail(null, new gmail.Message()));
     }
   }
 
@@ -407,11 +407,14 @@ Message _message(gmail.Message message) {
   String body = _body(message);
   List<Uri> links = body != null ? extractURI(body) : <Uri>[];
 
+  bool isRead =
+      message.labelIds == null ? false : !message.labelIds.contains('UNREAD');
+
   return new Message(
     id: message.id,
     threadId: message.threadId,
     timestamp: _timestamp(message.internalDate),
-    isRead: !message.labelIds.contains('UNREAD'),
+    isRead: isRead,
     sender: sender,
     subject: subject,
     senderProfileUrl: null,

@@ -53,6 +53,8 @@ void main() {
     }),
   );
 
+  moduleWidget.advertise();
+
   runApp(new MaterialApp(
     home: moduleWidget,
   ));

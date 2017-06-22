@@ -52,9 +52,6 @@ class EmailComposerModuleModel extends ModuleModel {
   final models.Message _message = new models.Message(
       recipientList: <models.Mailbox>[], subject: '', text: '');
 
-  /// A proxy to the [Link] used for storing internal state.
-  final LinkProxy stateLink = new LinkProxy();
-
   Timer _draftChangeTimer;
 
   @override
@@ -82,8 +79,6 @@ class EmailComposerModuleModel extends ModuleModel {
       MessageComposer.serviceName,
     );
 
-    moduleContext.getLink('state', stateLink.ctrl.request());
-
     moduleContext.getComponentContext(componentContext.ctrl.request());
 
     componentContext.connectToAgent(
@@ -103,14 +98,22 @@ class EmailComposerModuleModel extends ModuleModel {
     agentController.ctrl.close();
     componentContext.ctrl.close();
     emailContentProvider.ctrl.close();
-    stateLink.ctrl.close();
 
     super.onStop();
   }
 
+  /// Link handling rules:
+  ///
+  /// If the initial link contains a draft ID, fetch it from the
+  /// content provider to populate the content; otherwise create a new draft.
+  /// If the initial link contains content, use that to populate a new
+  /// draft, but an existing draft's fetched content will take priority.
+  /// When storing state, save the entire message to the initial link; if
+  /// the module is stopped and later restarted, only the draft ID is really
+  /// used, but storing the entire message makes link usage symmetric between
+  /// this module and its parent.
   @override
   void onNotify(String data) {
-    // TODO(SO-547): Chase down why `mm.onNotify()` is not being called.
     log.fine('notify: $data');
 
     models.Message m = _parseLinkData(data);
@@ -119,13 +122,22 @@ class EmailComposerModuleModel extends ModuleModel {
       if (m.id != null) _message.id = m.id;
       if (m.threadId != null) _message.threadId = m.threadId;
       if (m.draftId != null) _message.draftId = m.draftId;
-      _handleMessageUpdated(m);
-      notifyListeners();
+      _mergeContent(m);
     }
-
-    // Now that we have passed-down configuration, override with stored data
-    log.fine('getting state link');
-    stateLink.get(null, this._mergeState);
+    // Don't notify listeners yet; notify them when the draft has been either
+    // created or fetched
+    if (_message.draftId == null) {
+      // We don't yet have a draft ID, create a draft
+      Message fidlMessage = _convertMessage(_message);
+      emailContentProvider.createDraft(fidlMessage, (Message m) {
+        _mergeDraft(m, false);
+      });
+    } else {
+      // Fetch latest draft content
+      emailContentProvider.getDraftMessage(_message.draftId, (Message m) {
+        _mergeDraft(m, true);
+      });
+    }
   }
 
   models.Message _parseLinkData(String data) {
@@ -161,52 +173,37 @@ class EmailComposerModuleModel extends ModuleModel {
       ..json = data;
   }
 
-  void _mergeState(String data) {
-    log.fine('merge state called $data');
-
-    models.Message m = _parseLinkData(data);
-    if (m != null) {
-      // TODO(SO-503): This merging logic is kind of hacky
-      _message.id = m.id;
-      _message.threadId = m.threadId;
-      _message.draftId = m.draftId;
-      _message.recipientList = message.recipientList;
-      _message.subject = message.subject;
-      _message.text = message.text;
+  void _mergeDraft(Message message, bool mergeContent) {
+    if (message.draftId == null) {
+      // TODO(SO-266): Handle errors appropriately
+      log.severe('No draft ID in draft; content provider call failed');
+      return;
     }
-    if (_message.draftId == null) {
-      Message fidlMessage = _convertMessage(_message);
-      emailContentProvider.createDraft(fidlMessage, _handleDraftCreated);
-    } else if (m == null) {
-      // We don't have any state stored, save it
-      _storeState();
+    // TODO(SO-503): This merging logic is kind of hacky
+    if (message.id != null) _message.id = message.id;
+    if (message.threadId != null) _message.threadId = message.threadId;
+    if (message.draftId != null) _message.draftId = message.draftId;
+    if (mergeContent) {
+      final models.Message m =
+          new models.Message.fromJson(JSON.decode(message.json));
+      _mergeContent(m);
     }
+    _storeState();
     notifyListeners();
   }
 
-  void _handleDraftCreated(Message message) {
+  void _mergeContent(models.Message m) {
+    // Update our model based on new values, but keep IDs
     // TODO(SO-503): This merging logic is kind of hacky
-    _message.id = message.id;
-    _message.threadId = message.threadId;
-    _message.draftId = message.draftId;
-    _storeState();
-    notifyListeners();
+    _message.recipientList = m.recipientList;
+    _message.subject = m.subject;
+    _message.text = m.text;
   }
 
   void _storeState() {
     EmailComposerDocument doc = new EmailComposerDocument()..message = _message;
     String data = JSON.encode(doc);
-    stateLink.updateObject(EmailComposerDocument.path, data);
-  }
-
-  void _handleMessageUpdated(models.Message message) {
-    log.fine('updating message: $message');
-
-    // Update our model based on new values, but keep IDs
-    // TODO(SO-503): This merging logic is kind of hacky
-    _message.recipientList = message.recipientList;
-    _message.subject = message.subject;
-    _message.text = message.text;
+    link.updateObject(EmailComposerDocument.path, data);
   }
 
   void _handleDraftSent(Status status) {
@@ -237,7 +234,7 @@ class EmailComposerModuleModel extends ModuleModel {
 
   /// Handle the draft changed event from the UI.
   void handleDraftChanged(models.Message message) {
-    _handleMessageUpdated(message);
+    _mergeContent(message);
 
     // Cancel the last timer, if any.
     if (_draftChangeTimer != null && _draftChangeTimer.isActive) {
@@ -246,7 +243,10 @@ class EmailComposerModuleModel extends ModuleModel {
     _draftChangeTimer = new Timer(_kUpdateDraftDelay, () {
       Message fidlMessage = _convertMessage(_message);
       emailContentProvider.updateDraft(fidlMessage, (Message m) {
-        log.severe('Failed to update draft.');
+        if (m.draftId == null) {
+          // TODO(SO-266): Handle errors appropriately
+          log.severe('No draft ID in draft; failed to update draft');
+        }
       });
     });
   }
@@ -256,7 +256,7 @@ class EmailComposerModuleModel extends ModuleModel {
     log.fine('sending message');
 
     // Make sure the draft is up to date
-    _handleMessageUpdated(message);
+    _mergeContent(message);
     // Cancel the update timer, if any.
     if (_draftChangeTimer != null && _draftChangeTimer.isActive) {
       _draftChangeTimer.cancel();
