@@ -34,7 +34,7 @@ class EmailLinkDocument {
 
   /// Constructor
   EmailLinkDocument({
-    String labelId: 'INBOX',
+    String labelId,
     String threadId,
   }) {
     _json[labelIdkey] = labelId;

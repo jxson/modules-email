@@ -94,6 +94,9 @@ class EmailNavModuleModel extends ModuleModel {
       }).catchError((Error error) => log.severe('error fetching user', error)),
       getLabels().then((Map<String, Label> labels) {
         _labels = labels;
+        if (_doc.labelId == null) {
+          handleSelectedLabel(_labels['INBOX']);
+        }
         notifyListeners();
       }).catchError((Error error) => log.severe('error fetching user', error)),
     ]).then((List<Null> results) {

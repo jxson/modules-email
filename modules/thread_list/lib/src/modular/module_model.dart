@@ -171,8 +171,8 @@ class EmailThreadListModuleModel extends ModuleModel {
       String data = JSON.encode(_doc);
       link.updateObject(EmailLinkDocument.path, data);
       threadController.focus();
+      composeController.defocus();
     }
-    composeController.defocus();
 
     notifyListeners();
   }
@@ -244,6 +244,9 @@ class EmailThreadListModuleModel extends ModuleModel {
       }),
       getThreads(_doc.labelId).then((Map<String, Thread> threads) {
         _threads = threads;
+        if (_threads.values.isNotEmpty) {
+          handleThreadSelected(_threads.values.first);
+        }
       }),
     ]).then((List<Null> results) {
       log.fine('data fetched, rendering.');
