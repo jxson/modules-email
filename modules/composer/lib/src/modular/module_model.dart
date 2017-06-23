@@ -271,15 +271,16 @@ class EmailComposerModuleModel extends ModuleModel {
 
   /// Handle "delete" events.
   void handleDelete() {
-    log.fine('TODO(SO-548): Delete draft/message.');
-    // TODO(SO-548): Handle UI affordances for close, delete, and send.
-    moduleContext.done();
+    if (_message.draftId == null) return;
+
+    emailContentProvider.deleteDraft(_message.draftId, () {
+      log.fine('deleted draft: ${_message.draftId}');
+      moduleContext.done();
+    });
   }
 
   /// Handle "close" events.
   void handleClose() {
-    log.fine('TODO(SO-548): Close module.');
-    // TODO(SO-548): Handle UI affordances for close, delete, and send.
     moduleContext.done();
   }
 }
