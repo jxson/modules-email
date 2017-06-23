@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:lib.widgets/model.dart';
 
 import '../../models.dart';
+import 'close_icon.dart';
 import 'delete_icon.dart';
 import 'message_text_input.dart';
 import 'recipient_input.dart';
@@ -21,6 +22,7 @@ class ComposerScaffold extends StatelessWidget {
       // TODO(SO-424): Use email spec compliant colors and sizing
       appBar: new AppBar(
         backgroundColor: Colors.white,
+        leading: new CloseIcon(),
         actions: <Widget>[
           new DeleteIcon(),
           new SendIcon(),
