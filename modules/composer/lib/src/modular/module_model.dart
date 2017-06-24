@@ -278,8 +278,6 @@ class EmailComposerModuleModel extends ModuleModel {
 
   /// Handle "close" events.
   void handleClose() {
-    log.fine('TODO(SO-548): Close module.');
-    // TODO(SO-548): Handle UI affordances for close, delete, and send.
     moduleContext.done();
   }
 }

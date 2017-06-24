@@ -200,6 +200,7 @@ class EmailThreadListModuleModel extends ModuleModel {
     EmailComposerDocument doc = new EmailComposerDocument();
     doc.message = message;
     link.set(EmailComposerDocument.path, JSON.encode(doc));
+    link.ctrl.close();
 
     // Start a new instance of a composer module.
     ModuleControllerProxy composerController = new ModuleControllerProxy();
@@ -220,7 +221,6 @@ class EmailThreadListModuleModel extends ModuleModel {
 
     composerController.watch(watcherBinding.wrap(new _DoneWatcher(
       onDone: () {
-        link.ctrl.close();
         composerController
             .stop(() => composerControllers.remove(composerController));
       },
