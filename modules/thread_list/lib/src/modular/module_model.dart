@@ -57,11 +57,9 @@ class EmailThreadListModuleModel extends ModuleModel {
   /// A proxy to the ModuleController for thread module
   final ModuleControllerProxy threadController = new ModuleControllerProxy();
 
-  /// A proxy to the ModuleController for compose module
-  final ModuleControllerProxy composeController = new ModuleControllerProxy();
-
-  /// A watcher for the compose module
-  final ModuleWatcherBinding watcherBinding = new ModuleWatcherBinding();
+  /// A list of all open composer proxy controllers.
+  final List<ModuleControllerProxy> composerControllers =
+      <ModuleControllerProxy>[];
 
   /// The [Thread] objects to display: retreived from the
   /// [emailContentProvider].
@@ -118,6 +116,8 @@ class EmailThreadListModuleModel extends ModuleModel {
     agentController.ctrl.close();
     componentContext.ctrl.close();
     emailContentProvider.ctrl.close();
+    composerControllers
+        .forEach((ModuleControllerProxy composer) => composer.ctrl.close());
 
     super.onStop();
   }
@@ -172,7 +172,9 @@ class EmailThreadListModuleModel extends ModuleModel {
       link.updateObject(EmailLinkDocument.path, data);
       threadController.focus();
     }
-    composeController.defocus();
+
+    composerControllers
+        .forEach((ModuleControllerProxy composer) => composer.defocus());
 
     notifyListeners();
   }
@@ -185,47 +187,50 @@ class EmailThreadListModuleModel extends ModuleModel {
 
   /// Method to trigger the launching of the email/composer module from the
   /// UI.
-  ///
-  /// NOTE: Currently this method signals the email/story module to launch the
-  /// composer by updating the Link object with an email/composer specific
-  /// document.
-  ///
-  /// TODO(SO-467): use story shell API's to launch email modules.
   void launchComposer() {
     _launchComposer(null);
   }
 
   void _launchComposer(Message message) {
+    String name = 'composer-${composerControllers.length + 1}';
+
+    // Create a new link so composer instances don't share state.
+    LinkProxy link = new LinkProxy();
+    moduleContext.getLink(name, link.ctrl.request());
     EmailComposerDocument doc = new EmailComposerDocument();
     doc.message = message;
-    // TODO(FW-208): Set the entire structure at once to avoid
-    // issues with how notifications are sequenced
-    Map<String, dynamic> contents = <String, dynamic>{
-      EmailComposerDocument.docroot: doc.toJson(),
-      EmailLinkDocument.docroot: _doc.toJson(),
-    };
-    String data = JSON.encode(contents);
-    link.updateObject(null, data);
-    if (composeController.ctrl.isBound) {
-      composeController.focus();
-    } else {
-      moduleContext.startModuleInShell(
-        _kEmailComposerUrl,
-        _kEmailComposerUrl,
-        null, // Pass the stories default link to child modules.
-        null,
-        null,
-        composeController.ctrl.request(),
-        new SurfaceRelation()
-          ..arrangement = SurfaceArrangement.copresent
-          ..dependency = SurfaceDependency.dependent
-          ..emphasis = 4.0 / 3.0,
-        true,
-      );
-      composeController.watch(watcherBinding
-          .wrap(new _DoneWatcher(onDone: () => composeController.stop(() {}))));
-    }
+    link.set(EmailComposerDocument.path, JSON.encode(doc));
+
+    // Start a new instance of a composer module.
+    ModuleControllerProxy composerController = new ModuleControllerProxy();
+    ModuleWatcherBinding watcherBinding = new ModuleWatcherBinding();
+    moduleContext.startModuleInShell(
+      name,
+      _kEmailComposerUrl,
+      name,
+      null,
+      null,
+      composerController.ctrl.request(),
+      new SurfaceRelation()
+        ..arrangement = SurfaceArrangement.copresent
+        ..dependency = SurfaceDependency.dependent
+        ..emphasis = 4.0 / 3.0,
+      true,
+    );
+
+    composerController.watch(watcherBinding.wrap(new _DoneWatcher(
+      onDone: () {
+        link.ctrl.close();
+        composerController
+            .stop(() => composerControllers.remove(composerController));
+      },
+    )));
+
     threadController.defocus();
+    composerControllers
+        .forEach((ModuleControllerProxy composer) => composer.defocus());
+
+    composerControllers.add(composerController);
   }
 
   /// Fetches data needed to render UI.
