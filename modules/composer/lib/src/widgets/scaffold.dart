@@ -11,7 +11,6 @@ import 'delete_icon.dart';
 import 'message_text_input.dart';
 import 'recipient_input.dart';
 import 'send_button.dart';
-import 'send_icon.dart';
 import 'subject_input.dart';
 
 /// Render's a [Scaffold] for a [MaterialApp].
@@ -22,11 +21,7 @@ class ComposerScaffold extends StatelessWidget {
       // TODO(SO-424): Use email spec compliant colors and sizing
       appBar: new AppBar(
         backgroundColor: Colors.white,
-        leading: new CloseIcon(),
-        actions: <Widget>[
-          new DeleteIcon(),
-          new SendIcon(),
-        ],
+        actions: <Widget>[new CloseIcon()],
       ),
       body: buildBody(context),
       bottomNavigationBar: new ButtonBar(
