@@ -163,10 +163,10 @@ class EmailThreadModuleModel extends ModuleModel {
   Future<Thread> getThread(String id) {
     Completer<Thread> completer = new Completer<Thread>();
 
-    log.fine('fetching thread ${id}');
+    log.fine('fetching thread $id');
 
     emailContentProvider.getThread(id, (cp.Thread result) {
-      log.fine('got thread ${id}');
+      log.fine('got thread $id');
       String data = result.jsonPayload;
 
       try {

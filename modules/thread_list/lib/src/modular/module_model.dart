@@ -277,11 +277,11 @@ class EmailThreadListModuleModel extends ModuleModel {
     Completer<Map<String, Thread>> completer =
         new Completer<Map<String, Thread>>();
 
-    log.fine('fetching threads for ${labelId}');
+    log.fine('fetching threads for $labelId');
 
     // TODO(SO-387): Paging to allow loading of more than 20
     emailContentProvider.threads(labelId, 20, (List<cp.Thread> results) {
-      log.fine('fetched threads for ${labelId}');
+      log.fine('fetched threads for $labelId');
 
       Map<String, Thread> threads = <String, Thread>{};
 
