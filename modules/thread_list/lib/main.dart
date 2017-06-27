@@ -26,6 +26,5 @@ void main() {
     title: 'Email Thread List Module',
     home: moduleWidget,
     theme: new ThemeData(primarySwatch: Colors.red),
-    debugShowCheckedModeBanner: false,
   ));
 }

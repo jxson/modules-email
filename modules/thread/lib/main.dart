@@ -39,6 +39,5 @@ void main() {
     title: 'Email Thread Module',
     home: moduleWidget,
     theme: new ThemeData(primarySwatch: Colors.blue),
-    debugShowCheckedModeBanner: false,
   ));
 }
