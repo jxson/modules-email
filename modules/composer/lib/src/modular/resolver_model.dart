@@ -20,7 +20,12 @@ import 'package:lib.widgets/modular.dart';
 import 'package:lib.widgets/widgets.dart';
 import 'package:meta/meta.dart';
 
-const double _kHeight = 800.0;
+// TODO(youngseokyoon): This code is almost the same as the one from the
+// 'thread' module. Extract this into a common package.
+// https://fuchsia.atlassian.net/browse/SO-572
+
+const double _kMaxWidth = 300.0;
+const double _kAspectRatio = 16.0 / 9.0;
 
 /// Used to resolve modules to embed from any links in the message content.
 class ModularResolverModel extends ResolverModel {
@@ -79,12 +84,14 @@ class ModularResolverModel extends ResolverModel {
 
   /// Build a widget with the embedded module.
   Widget buildEmbeddedModule(ChildViewConnection connection) {
-    return new SizedBox(
-      height: _kHeight,
-      child: new Align(
-        alignment: FractionalOffset.topCenter,
-        child: new Card(
+    return new Container(
+      constraints: const BoxConstraints(maxWidth: _kMaxWidth),
+      margin: const EdgeInsets.only(top: 8.0),
+      child: new AspectRatio(
+        aspectRatio: _kAspectRatio,
+        child: new Material(
           color: Colors.grey[200],
+          type: MaterialType.card,
           child: new Center(
             child: new ChildView(connection: connection),
           ),
@@ -122,7 +129,7 @@ class ModularResolverModel extends ResolverModel {
       await moduleModel.ready;
 
       LinkProxy link = new LinkProxy();
-      moduleModel.moduleContext.getLink(contract, link.ctrl.request());
+      moduleModel.moduleContext.getLink(name, link.ctrl.request());
       if (data != null) {
         link.set(<String>[contract], data);
       }
@@ -152,7 +159,6 @@ class ModularResolverModel extends ResolverModel {
     InterfacePair<ViewOwner> viewOwnerPair = new InterfacePair<ViewOwner>();
     InterfacePair<ModuleController> moduleControllerpair =
         new InterfacePair<ModuleController>();
-    String name = url;
 
     moduleModel.moduleContext.startModule(
       name,

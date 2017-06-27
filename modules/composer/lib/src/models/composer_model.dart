@@ -110,7 +110,7 @@ class ComposerModel extends Model {
 
   /// Handle message body updates.
   void handleBodyChanged(String body) {
-    log.fine('subject: $body');
+    log.fine('body: $body');
     _message.text = body;
     notifyListeners();
     onUpdate?.call(_message);

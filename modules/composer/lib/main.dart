@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:application.lib.app.dart/app.dart';
+import 'package:email_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:lib.logging/logging.dart';
 import 'package:lib.widgets/model.dart';
@@ -10,13 +11,11 @@ import 'package:lib.widgets/modular.dart';
 
 import 'models.dart';
 import 'src/modular/module_model.dart';
+import 'src/modular/resolver_model.dart';
 import 'widgets.dart';
 
 void main() {
-  setupLogger(
-    name: 'email/composer',
-    level: Level.FINE,
-  );
+  setupLogger(name: 'email/composer');
 
   EmailComposerModuleModel moduleModel = new EmailComposerModuleModel();
 
@@ -29,28 +28,37 @@ void main() {
     onUpdate: moduleModel.handleDraftChanged,
   );
 
+  ApplicationContext applicationContext =
+      new ApplicationContext.fromStartupInfo();
+
   ModuleWidget<EmailComposerModuleModel> moduleWidget =
       new ModuleWidget<EmailComposerModuleModel>(
     moduleModel: moduleModel,
-    applicationContext: new ApplicationContext.fromStartupInfo(),
-    child: new ScopedModelDescendant<EmailComposerModuleModel>(builder: (
-      BuildContext context,
-      Widget child,
-      EmailComposerModuleModel mm,
-    ) {
-      /// When the [moduleModel] updates it could have a message value fetched
-      /// from a Link that is converted into a Message object. If that is the
-      /// case, assign a new Message object to the UI model.
-      model.message = mm.message;
+    applicationContext: applicationContext,
+    child: new ScopedModel<ResolverModel>(
+      model: new ModularResolverModel(
+        context: applicationContext,
+        moduleModel: moduleModel,
+      ),
+      child: new ScopedModelDescendant<EmailComposerModuleModel>(builder: (
+        BuildContext context,
+        Widget child,
+        EmailComposerModuleModel mm,
+      ) {
+        /// When the [moduleModel] updates it could have a message value fetched
+        /// from a Link that is converted into a Message object. If that is the
+        /// case, assign a new Message object to the UI model.
+        model.message = mm.message;
 
-      /// Add the [ComposerModel] instance to the Widget hierarchy as a
-      /// [ScopedModel] so it can be accessed by leaf node Widgets (buttons,
-      /// etc.).
-      return new ScopedModel<ComposerModel>(
-        model: model,
-        child: new ComposerScaffold(),
-      );
-    }),
+        /// Add the [ComposerModel] instance to the Widget hierarchy as a
+        /// [ScopedModel] so it can be accessed by leaf node Widgets (buttons,
+        /// etc.).
+        return new ScopedModel<ComposerModel>(
+          model: model,
+          child: new ComposerScaffold(),
+        );
+      }),
+    ),
   );
 
   moduleWidget.advertise();

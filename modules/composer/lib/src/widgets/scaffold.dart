@@ -43,24 +43,29 @@ class ComposerScaffold extends StatelessWidget {
         ComposerModel model,
       ) {
         return new Material(
-            child: new Column(children: <Widget>[
-          // The input field for "To: ...".
-          new RecipientInput(
-            recipientList: model.to,
-            onRecipientsChanged: model.handleToChanged,
+          child: new Column(
+            children: <Widget>[
+              // The input field for "To: ...".
+              new RecipientInput(
+                recipientList: model.to,
+                onRecipientsChanged: model.handleToChanged,
+              ),
+              // TODO(SO-549): Add missing "From:" field.
+              // The input field for "Subject: ...".
+              new SubjectInput(
+                initialText: model.subject,
+                onTextChange: model.handleSubjectChanged,
+              ),
+              // Message text input.
+              new Expanded(
+                child: new MessageTextInput(
+                  initialText: model.body,
+                  onTextChange: model.handleBodyChanged,
+                ),
+              ),
+            ],
           ),
-          // TODO(SO-549): Add missing "From:" field.
-          // The input field for "Subject: ...".
-          new SubjectInput(
-            initialText: model.subject,
-            onTextChange: model.handleSubjectChanged,
-          ),
-          // Message text input.
-          new MessageTextInput(
-            initialText: model.body,
-            onTextChange: model.handleBodyChanged,
-          ),
-        ]));
+        );
       },
     );
   }
