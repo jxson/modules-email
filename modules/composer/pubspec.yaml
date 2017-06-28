@@ -13,6 +13,8 @@ dependencies:
     path: ../../../../../lib/widgets/packages/widgets
   email_models:
     path: ../../packages/email_models
+  email_widgets:
+    path: ../../packages/email_widgets
 
 dev_dependencies:
   test: any
