@@ -4,19 +4,17 @@
 
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
+
+import '../../models.dart';
 
 /// Callback type for updating the recipients of a new message
 typedef void RecipientsChangedCallback(List<Mailbox> recipientList);
 
 /// Google Inbox style 'recipient' field input.
 class RecipientInput extends StatefulWidget {
-  /// Callback function that is called everytime a new recipient is add or an
-  /// existing recipient is removed. The updated recipient list is passed in
-  /// as the callback parameter.
-  final RecipientsChangedCallback onRecipientsChanged;
-
-  /// List of recipients. This is a copy of what is fed in.
-  final List<Mailbox> recipientList;
+  /// Composer model to use for this recipient list
+  final ComposerModel model;
 
   /// Background color.
   final Color backgroundColor;
@@ -24,12 +22,12 @@ class RecipientInput extends StatefulWidget {
   /// Creates a [RecipientInput] instance
   RecipientInput({
     Key key,
-    this.onRecipientsChanged,
-    List<Mailbox> recipientList,
+    @required this.model,
     this.backgroundColor,
   })
-      : recipientList = recipientList ?? const <Mailbox>[],
-        super(key: key);
+      : super(key: key) {
+    assert(this.model != null);
+  }
 
   @override
   _RecipientInputState createState() => new _RecipientInputState();
@@ -49,19 +47,26 @@ class _RecipientInputState extends State<RecipientInput> {
   @override
   void initState() {
     super.initState();
-    _recipientList = new List<Mailbox>.from(widget.recipientList);
+    _recipientList = new List<Mailbox>.from(widget.model.to);
     _textFocus.addListener(() {
       if (!_textFocus.hasFocus) {
         // Text input lost focus.
         _checkForRecipient(_controller.text);
       }
     });
+    widget.model.onPreSend = _handlePreSend;
+  }
+
+  // Hook to check for valid recipients in the text input field
+  // when the message is about to be sent
+  void _handlePreSend() {
+    _checkForRecipient(_controller.text);
   }
 
   void _notifyRecipientsChanged() {
-    if (widget.onRecipientsChanged != null) {
-      widget
-          .onRecipientsChanged(new List<Mailbox>.unmodifiable(_recipientList));
+    if (widget.model.handleToChanged != null) {
+      widget.model
+          .handleToChanged(new List<Mailbox>.unmodifiable(_recipientList));
     }
   }
 
@@ -102,7 +107,7 @@ class _RecipientInputState extends State<RecipientInput> {
   @override
   void didUpdateWidget(RecipientInput oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _recipientList = new List<Mailbox>.from(widget.recipientList);
+    _recipientList = new List<Mailbox>.from(widget.model.to);
   }
 
   @override

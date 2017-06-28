@@ -17,16 +17,19 @@ import 'package:meta/meta.dart';
 /// object. To update the attributes rendered in the UI from async operations
 /// (like Link#get(...)) a special setter for [message] is exposed.
 class ComposerModel extends Model {
-  /// Trigered whenever a "Send" affordance is explicitly pressed.
+  /// Optional pre-send hook, used to perform final UI validation.
+  VoidCallback onPreSend;
+
+  /// Triggered whenever a "Send" affordance is explicitly pressed.
   final VoidCallback onSend;
 
-  /// Trigered whenever a "Close" affordance is explicitly pressed.
+  /// Triggered whenever a "Close" affordance is explicitly pressed.
   final VoidCallback onClose;
 
-  /// Trigered whenever a "Delete" affordance is explicitly pressed.
+  /// Triggered whenever a "Delete" affordance is explicitly pressed.
   final VoidCallback onDelete;
 
-  /// Trigered anytime the encapsulated [Message] is updated by the user.
+  /// Triggered anytime the encapsulated [Message] is updated by the user.
   final ValueChanged<Message> onUpdate;
 
   /// Construct a new instance of [ComposerModel].
@@ -77,6 +80,7 @@ class ComposerModel extends Model {
   /// Handle "Send" events from the UI.
   void handleSend() {
     log.fine('"send" pressed');
+    onPreSend?.call();
     onSend?.call();
   }
 

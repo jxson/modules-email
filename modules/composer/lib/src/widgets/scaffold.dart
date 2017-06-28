@@ -50,8 +50,7 @@ class ComposerScaffold extends StatelessWidget {
             children: <Widget>[
               // The input field for "To: ...".
               new RecipientInput(
-                recipientList: model.to,
-                onRecipientsChanged: model.handleToChanged,
+                model: model,
                 backgroundColor: Colors.white,
               ),
               // TODO(SO-549): Add missing "From:" field.

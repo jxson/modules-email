@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:composer/models.dart';
 import 'package:composer/widgets.dart';
 import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
@@ -14,19 +15,28 @@ void main() {
       (WidgetTester tester) async {
     int removeRecipientTaps = 0;
 
+    ComposerModel model = new ComposerModel(
+      onDelete: () {},
+      onClose: () {},
+      onSend: () {},
+      onUpdate: (Message m) {
+        removeRecipientTaps++;
+        expect(m.recipientList.length, 0);
+      },
+    );
+    Message message = new Message();
+    message.recipientList = <Mailbox>[
+      new Mailbox(
+        displayName: 'Coco',
+        address: 'coco@cu.te',
+      )
+    ];
+    model.message = message;
+
     await tester.pumpWidget(new MaterialApp(
       home: new Material(
         child: new RecipientInput(
-          recipientList: <Mailbox>[
-            new Mailbox(
-              displayName: 'Coco',
-              address: 'coco@cu.te',
-            )
-          ],
-          onRecipientsChanged: (List<Mailbox> recipients) {
-            removeRecipientTaps++;
-            expect(recipients.length, 0);
-          },
+          model: model,
         ),
       ),
     ));
