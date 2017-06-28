@@ -26,6 +26,22 @@ import 'package:meta/meta.dart';
 
 const double _kMaxWidth = 300.0;
 const double _kAspectRatio = 16.0 / 9.0;
+const double _kInfoHeight = 60.0;
+
+class _PreviewLayoutDelegate extends SingleChildLayoutDelegate {
+  @override
+  Size getSize(BoxConstraints constraints) =>
+      getConstraintsForChild(constraints).biggest;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      constraints.tighten(
+        height: constraints.biggest.width / _kAspectRatio + _kInfoHeight,
+      );
+
+  @override
+  bool shouldRelayout(_PreviewLayoutDelegate oldDelegate) => false;
+}
 
 /// Used to resolve modules to embed from any links in the message content.
 class ModularResolverModel extends ResolverModel {
@@ -87,8 +103,8 @@ class ModularResolverModel extends ResolverModel {
     return new Container(
       constraints: const BoxConstraints(maxWidth: _kMaxWidth),
       margin: const EdgeInsets.only(top: 8.0),
-      child: new AspectRatio(
-        aspectRatio: _kAspectRatio,
+      child: new CustomSingleChildLayout(
+        delegate: new _PreviewLayoutDelegate(),
         child: new Material(
           color: Colors.grey[200],
           type: MaterialType.card,

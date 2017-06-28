@@ -24,12 +24,15 @@ class ComposerScaffold extends StatelessWidget {
         actions: <Widget>[new CloseIcon()],
       ),
       body: buildBody(context),
-      bottomNavigationBar: new ButtonBar(
-        alignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          new SendButton(),
-          new DeleteIcon(),
-        ],
+      bottomNavigationBar: new Container(
+        color: Colors.white,
+        child: new ButtonBar(
+          alignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            new SendButton(),
+            new DeleteIcon(),
+          ],
+        ),
       ),
     );
   }
@@ -49,18 +52,21 @@ class ComposerScaffold extends StatelessWidget {
               new RecipientInput(
                 recipientList: model.to,
                 onRecipientsChanged: model.handleToChanged,
+                backgroundColor: Colors.white,
               ),
               // TODO(SO-549): Add missing "From:" field.
               // The input field for "Subject: ...".
               new SubjectInput(
                 initialText: model.subject,
                 onTextChange: model.handleSubjectChanged,
+                backgroundColor: Colors.white,
               ),
               // Message text input.
               new Expanded(
                 child: new MessageTextInput(
                   initialText: model.body,
                   onTextChange: model.handleBodyChanged,
+                  backgroundColor: Colors.white,
                 ),
               ),
             ],

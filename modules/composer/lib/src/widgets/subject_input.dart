@@ -12,11 +12,15 @@ class SubjectInput extends StatefulWidget {
   /// Callback function that is called everytime the subject text is changed
   final ValueChanged<String> onTextChange;
 
+  /// Background color.
+  final Color backgroundColor;
+
   /// Constructor
   SubjectInput({
     Key key,
     this.initialText,
     this.onTextChange,
+    this.backgroundColor,
   })
       : super(key: key);
 
@@ -62,6 +66,7 @@ class _SubjectInputState extends State<SubjectInput> {
             color: Colors.grey[200],
           ),
         ),
+        color: widget.backgroundColor,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: new TextField(

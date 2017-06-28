@@ -18,11 +18,15 @@ class RecipientInput extends StatefulWidget {
   /// List of recipients. This is a copy of what is fed in.
   final List<Mailbox> recipientList;
 
+  /// Background color.
+  final Color backgroundColor;
+
   /// Creates a [RecipientInput] instance
   RecipientInput({
     Key key,
     this.onRecipientsChanged,
     List<Mailbox> recipientList,
+    this.backgroundColor,
   })
       : recipientList = recipientList ?? const <Mailbox>[],
         super(key: key);
@@ -159,6 +163,7 @@ class _RecipientInputState extends State<RecipientInput> {
             color: Colors.grey[200],
           ),
         ),
+        color: widget.backgroundColor,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: new Row(

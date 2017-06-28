@@ -16,11 +16,15 @@ class MessageTextInput extends StatefulWidget {
   /// Callback function that is called everytime the subject text is changed
   final ValueChanged<String> onTextChange;
 
+  /// Background color.
+  final Color backgroundColor;
+
   /// Constructor
   MessageTextInput({
     Key key,
     this.initialText,
     this.onTextChange,
+    this.backgroundColor,
   })
       : super(key: key);
 
@@ -86,6 +90,7 @@ class _MessageTextInputState extends State<MessageTextInput> {
     TextStyle labelStyle = inputStyle.copyWith(color: Colors.grey[500]);
 
     return new Container(
+      color: widget.backgroundColor,
       padding: const EdgeInsets.all(16.0),
       child: new AnimatedBuilder(
         animation: _controller,
