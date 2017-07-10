@@ -12,7 +12,8 @@ import 'package:apps.maxwell.services.user/intelligence_services.fidl.dart';
 import 'package:apps.modular.services.agent.agent_controller/agent_controller.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.story/link.fidl.dart';
-import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart';
+import 'package:apps.modules.email.services.email/email_content_provider.fidl.dart'
+    as ecp;
 import 'package:apps.modules.email.services.messages/message.fidl.dart';
 import 'package:apps.modules.email.services.messages/message_composer.fidl.dart';
 import 'package:email_composer/document.dart';
@@ -33,8 +34,8 @@ class EmailComposerModuleModel extends ModuleModel {
       new ServiceProviderImpl();
 
   /// A proxy to the [EmailContentProvider] service impl.
-  final EmailContentProviderProxy emailContentProvider =
-      new EmailContentProviderProxy();
+  final ecp.EmailContentProviderProxy emailContentProvider =
+      new ecp.EmailContentProviderProxy();
 
   /// A proxy to the [AgentController], used to connect to the agent.
   final AgentControllerProxy agentController = new AgentControllerProxy();
@@ -206,7 +207,7 @@ class EmailComposerModuleModel extends ModuleModel {
     link.updateObject(EmailComposerDocument.path, data);
   }
 
-  void _handleDraftSent(Status status) {
+  void _handleDraftSent(ecp.Status status) {
     log.fine('sendDraft returned: $status');
 
     if (status.success) {
