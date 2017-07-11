@@ -109,7 +109,7 @@ class _MessageTextInputState extends State<MessageTextInput> {
           onChanged: widget.onTextChange,
           style: inputStyle,
           decoration: new InputDecoration.collapsed(
-            hintText: 'Compose email',
+            hintText: '',
             hintStyle: labelStyle,
           ),
           maxLines: null,
