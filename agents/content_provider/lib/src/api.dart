@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:apps.modular.services.auth/token_provider.fidl.dart';
 import 'package:email_api/email_api.dart';
+import 'package:lib.logging/logging.dart';
 
 /// Helper to access and contain an EmailAPI singleton.
 class API {
@@ -15,12 +16,26 @@ class API {
   ) async {
     Completer<String> _clientIdCompleter = new Completer<String>();
     tokenProvider.getClientId(_clientIdCompleter.complete);
+
     Completer<String> _accessTokenCompleter = new Completer<String>();
-    tokenProvider.getAccessToken(_accessTokenCompleter.complete);
+    AuthErr authErr;
+    tokenProvider.getAccessToken((String token, AuthErr err) {
+      _accessTokenCompleter.complete(token);
+      authErr = err;
+    });
+
+    String accessToken = await _accessTokenCompleter.future;
+    log.fine('Access token:${accessToken}');
+    if (authErr.status != Status.ok) {
+      log.err('Error fetching access token:${authErr.message}');
+    }
+
     return new EmailAPI(
       id: await _clientIdCompleter.future,
-      token: await _accessTokenCompleter.future,
-      expiry: new DateTime.now().add(new Duration(hours: 1)).toUtc(),
+      token: accessToken,
+      // TODO: expiry time should be retrieved from GetAccessToken api, if
+      // needed.
+      expiry: new DateTime.now().add(new Duration(minutes: 50)).toUtc(),
       scopes: <String>[
         'openid',
         'email',
