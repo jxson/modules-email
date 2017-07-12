@@ -79,12 +79,15 @@ class EmailThreadListModuleModel extends ModuleModel {
   String get selectedThreadId => _doc.threadId;
 
   /// The title to display in the app bar.
-  String get title => _title;
-  String _title = '';
+  String get title => label?.name ?? '';
 
   /// Is the UI in a "loading" state?
   bool get loading => _loading;
   bool _loading = false;
+
+  /// The [Label] currently being viewed.
+  Label get label => _label;
+  Label _label;
 
   EmailLinkDocument _doc = new EmailLinkDocument();
 
@@ -274,7 +277,7 @@ class EmailThreadListModuleModel extends ModuleModel {
     // Fetch Label and Thread in parallel.
     Future.wait(<Future<Null>>[
       getLabel(_doc.labelId).then((Label label) {
-        this._title = label.name;
+        this._label = label;
         // Partially loaded, trigger a render to display the title.
         notifyListeners();
       }),

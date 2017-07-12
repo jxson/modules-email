@@ -32,7 +32,7 @@ class EmailThreadListScreen extends StatelessWidget {
         // TODO(SO-424): Use email spec compliant colors and sizing.
         appBar: new AppBar(
           title: new Text(
-            model.title ?? '',
+            model.title,
             style: new TextStyle(color: Colors.black),
           ),
           backgroundColor: Colors.white,
@@ -52,9 +52,8 @@ class EmailThreadListScreen extends StatelessWidget {
       return new Center(child: new CircularProgressIndicator());
     }
 
-    // Blank slate. TODO link to an issue.
     if (model.threads.isEmpty) {
-      return new Container();
+      return buildBlankSlate(context, model);
     }
 
     List<Thread> threads = model.threads.values.toList();
@@ -69,6 +68,56 @@ class EmailThreadListScreen extends StatelessWidget {
     return new ListView(
       children: threads.map((Thread t) => buildListItem(t, model)).toList(),
     );
+  }
+
+  /// Blank slate.
+  Widget buildBlankSlate(
+    BuildContext context,
+    EmailThreadListModuleModel model,
+  ) {
+    // Default values
+    IconData icon = Icons.email;
+    String text = 'Nothing in ${model.title}';
+
+    if (model.label != null) {
+      switch (model.label.id) {
+        case 'INBOX':
+          icon = Icons.inbox;
+          break;
+        case 'DRAFT':
+          icon = Icons.drafts;
+          break;
+        case 'SENT':
+          icon = Icons.send;
+          break;
+        case 'TRASH':
+          icon = Icons.delete;
+          break;
+        case 'SPAM':
+          icon = Icons.error;
+          break;
+        default:
+          text = 'No messages labeled "${model.label.name}"';
+          break;
+      }
+    }
+
+    return new Center(
+        child: new Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        new Icon(
+          icon,
+          size: 120.0,
+          color: Colors.grey[500],
+        ),
+        new Text(
+          text,
+          style: new TextStyle(color: Colors.grey[600]),
+        ),
+      ],
+    ));
   }
 
   /// Create the list item view for the given thread.
