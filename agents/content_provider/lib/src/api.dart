@@ -25,9 +25,9 @@ class API {
     });
 
     String accessToken = await _accessTokenCompleter.future;
-    log.fine('Access token:$accessToken');
     if (authErr.status != Status.ok) {
-      log.warning('Error fetching access token:${authErr.message}');
+      log.severe('Error fetching access token:${authErr.message}');
+      return null;
     }
 
     return new EmailAPI(
