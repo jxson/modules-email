@@ -12,8 +12,8 @@ dart_package("email_api") {
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/util",
     "//apps/modules/email/packages/email_models",
-    "//third_party/dart-pkg/pub/googleapis_auth",
     "//third_party/dart-pkg/pub/googleapis",
+    "//third_party/dart-pkg/pub/googleapis_auth",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"
