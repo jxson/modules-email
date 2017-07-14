@@ -9,10 +9,11 @@ import 'package:email_models/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:googleapis/oauth2/v2.dart' as oauth;
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart';
-import 'package:meta/meta.dart';
 import 'package:models/user.dart';
 import 'package:util/extract_uri.dart';
+
+export 'package:googleapis_auth/auth_io.dart';
+export 'package:http/http.dart';
 
 const List<String> _kLabelSortOrder = const <String>[
   'INBOX',
@@ -25,34 +26,25 @@ const List<String> _kLabelSortOrder = const <String>[
 class EmailAPI {
   /// Google OAuth scopes.
   List<String> scopes;
-  Client _baseClient;
-  AuthClient _client;
   gmail.GmailApi _gmail;
 
   // TODO(vardhan): Do we need to track separate historyIds per-label?
   String _latestHistoryId;
 
   /// The [EmailAPI] constructor.
-  EmailAPI({
-    @required String id,
-    String secret,
-    @required String token,
-    @required DateTime expiry,
-    String refreshToken,
-    @required this.scopes,
-  }) {
-    assert(id != null);
-    assert(token != null);
-    assert(expiry != null);
-    assert(scopes != null);
+  EmailAPI(this._client) {
+    assert(_client != null, 'client must not be null');
+    _gmail = new gmail.GmailApi(this._client);
+  }
 
-    AccessToken accessToken = new AccessToken('Bearer', token, expiry);
-    AccessCredentials credentials =
-        new AccessCredentials(accessToken, refreshToken, scopes);
-    _baseClient = new Client();
-    _client = authenticatedClient(_baseClient, credentials);
+  /// Update the authenticated HTTP client.
+  set client(AuthClient newClient) {
+    assert(newClient != null, 'client must not be null');
+    _client = newClient;
     _gmail = new gmail.GmailApi(_client);
   }
+
+  AuthClient _client;
 
   /// Get the [GmailApi] instance.
   gmail.GmailApi get gmailApi => _gmail;
@@ -161,16 +153,29 @@ class EmailAPI {
   /// threads() call on the labelId.
   // TODO(vardhan): This returns a false positive for all history events, not
   // just new email. Filter, or rework the behavior of updating emails.
-  Future<int> fetchNewEmail({String labelId: 'INBOX', int max: 15}) async {
+  Future<bool> shouldUdateCache({
+    String labelId,
+    int max: 15,
+  }) async {
     // It could be that we have not finished fetching initial emails yet. In
     // which case, there are no new emails.
     if (_latestHistoryId == null) {
-      return 0;
+      return false;
     }
 
-    gmail.ListHistoryResponse response = await _gmail.users.history.list('me',
-        labelId: labelId, maxResults: max, startHistoryId: _latestHistoryId);
-    return response.history == null ? 0 : response.history.length;
+    // NOTE: It is possible for the latest history ID to be updated while this
+    // async operation is happening...
+    gmail.ListHistoryResponse response = await _gmail.users.history.list(
+      'me',
+      labelId: labelId,
+      maxResults: max,
+      startHistoryId: _latestHistoryId,
+    );
+
+    if (response.history == null)
+      return false;
+    else
+      return response.history.length > 0;
   }
 
   /// Get a list of [Thread]s from the Gmail REST API.

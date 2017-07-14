@@ -6,8 +6,6 @@ import 'package:email_models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
-import 'type_defs.dart';
-
 /// Google Inbox style Header for a single [Thread]
 /// Contains [Thread] level actions (Archive, Delete) and thread subject
 class ThreadActionBarHeader extends StatelessWidget {

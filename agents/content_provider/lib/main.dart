@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:application.lib.app.dart/app.dart';
 import 'package:apps.maxwell.services.suggestion/proposal_publisher.fidl.dart';
+import 'package:apps.maxwell.services.user/intelligence_services.fidl.dart';
 import 'package:apps.modular.services.agent/agent.fidl.dart';
 import 'package:apps.modular.services.agent/agent_context.fidl.dart';
 import 'package:apps.modular.services.auth/token_provider.fidl.dart';
@@ -40,12 +41,14 @@ class EmailContentProviderAgent extends AgentImpl {
   ) async {
     log.fine('onReady start.');
 
-    // Get the ProposalPublisher
     ProposalPublisherProxy proposalPublisher = new ProposalPublisherProxy();
-    connectToService(
-      applicationContext.environmentServices,
-      proposalPublisher.ctrl,
+    IntelligenceServicesProxy intelligenceServices =
+        new IntelligenceServicesProxy();
+    agentContext.getIntelligenceServices(intelligenceServices.ctrl.request());
+    intelligenceServices.getProposalPublisher(
+      proposalPublisher.ctrl.request(),
     );
+    intelligenceServices.ctrl.close();
 
     _emailContentProviderImpl = new EmailContentProviderImpl(
       componentContext,
@@ -86,7 +89,10 @@ class EmailContentProviderAgent extends AgentImpl {
 
 /// Main entry point.
 Future<Null> main(List<String> args) async {
-  setupLogger(name: 'email/agent');
+  setupLogger(
+    name: 'email/agent',
+    level: Level.INFO,
+  );
 
   _agent = new EmailContentProviderAgent(
     applicationContext: new ApplicationContext.fromStartupInfo(),

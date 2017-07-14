@@ -8,6 +8,9 @@ import 'package:widgets_meta/widgets_meta.dart';
 
 import 'message.dart';
 
+/// Callback function signature for an action on a thread
+typedef void ThreadCallback(Thread thread);
+
 const MapEquality<String, Message> _messageListEquality =
     const MapEquality<String, Message>();
 

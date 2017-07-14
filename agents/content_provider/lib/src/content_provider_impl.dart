@@ -16,6 +16,7 @@ import 'package:apps.modules.email.services.email/email_content_provider.fidl.da
     as ecp;
 import 'package:apps.modules.email.services.messages/message.fidl.dart' as m;
 import 'package:email_api/email_api.dart';
+import 'package:email_link/document.dart';
 import 'package:email_models/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:lib.fidl.dart/bindings.dart' as bindings;
@@ -26,7 +27,7 @@ import 'package:util/extract_uri.dart';
 import 'api.dart';
 
 /// Period at which we check for new email.
-const int kRefreshPeriodSecs = 60;
+const int kRefreshPeriodSecs = 30;
 
 /// This datastructure is used to keep a record of subscribers that want email
 /// updates. This is constructed when
@@ -115,34 +116,59 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
   Future<Null> onRefresh() async {
     EmailAPI _api = await API.fromTokenProvider(_tokenProvider);
 
-    for (String labelId in _labelToThreads.keys) {
-      int numEmail = await _api.fetchNewEmail(labelId: labelId);
-      if (numEmail > 0) {
-        await _fetchThreads(
-            labelId, (await _labelToThreads[labelId].future).length);
-        _notificationSubscribers.forEach(
-            (String messageQueueToken, NotificationSubscriber subscriber) {
-          subscriber.senderProxy.send('New Email!');
+    // TODO(SO-607): Fetching should happen in parallel.
+    _labelToThreads.keys.forEach((String key) async {
+      bool shouldFetch = await _api.shouldUdateCache(labelId: key);
 
-          Proposal p = new Proposal();
-          p.id = 'EmailContentProvider';
-          p.onSelected = <Action>[new Action()];
-          p.onSelected[0].focusStory = new FocusStory.init(subscriber.storyId);
-          // TODO(vardhan): Revisit display params.
-          p.display = new SuggestionDisplay.init(
-              'You have mail',
-              '...',
-              '......',
-              0xffffffff,
-              SuggestionImageType.person,
-              new List<String>(),
-              '',
-              AnnoyanceType.none);
+      if (shouldFetch) {
+        await _fetchThreads(key, 20);
+        log.fine('updated cache for $key');
 
-          _proposalPublisher.propose(p);
+        /// Notify modules that are subscribed to updates.
+        _notificationSubscribers.forEach((
+          String token,
+          NotificationSubscriber subscriber,
+        ) {
+          Map<String, String> update = <String, String>{
+            'label-id': key,
+          };
+
+          subscriber.senderProxy.send(JSON.encode(update));
         });
+
+        /// Create an interruptive notification proposal if new messages are
+        /// available for the inbox.
+        if (key == 'INBOX') {
+          log.fine('creating interruptive proposal');
+
+          Proposal proposal = new Proposal()
+            ..id = 'New $key message'
+            ..onSelected = <Action>[
+              // TODO(SO-610): Focus an email story if it is currently viewing
+              // the new message's thread.
+              new Action()
+                ..createStory = (new CreateStory()
+                  ..moduleId = 'email/nav'
+                  ..initialData =
+                      JSON.encode((new EmailLinkDocument(labelId: key))))
+            ]
+            ..display = (new SuggestionDisplay()
+              ..headline = 'New email'
+              ..subheadline = ''
+              ..details = ''
+              ..color = 0xFFFF0080
+              ..iconUrls = <String>[
+                'https://www.gstatic.com/images/branding/product/1x/gmail_96dp.png'
+              ]
+              ..imageType = SuggestionImageType.other
+              ..imageUrl = ''
+              ..annoyance = AnnoyanceType.interrupt);
+
+          log.fine('publishing proposal');
+          _proposalPublisher.propose(proposal);
+        }
       }
-    }
+    });
   }
 
   Future<Null> _fetchThreads(String labelId, int max) async {
@@ -169,8 +195,6 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
         }
       }
     }
-
-    log.fine('fetched ${threads.length} emails.');
 
     _labelToThreads[labelId].complete(threads);
   }
@@ -235,11 +259,8 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
 
   @override
   void registerForUpdates(String storyId, String messageQueueToken) {
-    log.fine('* registerForUpdates($storyId, $messageQueueToken) called');
-
     // already exists?
     if (_notificationSubscribers.containsKey(messageQueueToken)) {
-      log.fine('$messageQueueToken already subscribed to notifications');
       return;
     }
 

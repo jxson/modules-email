@@ -12,4 +12,3 @@ export 'src/resolver_model.dart';
 export 'src/thread_action_bar_header.dart';
 export 'src/thread_list_item.dart';
 export 'src/thread_participant_list.dart';
-export 'src/type_defs.dart';

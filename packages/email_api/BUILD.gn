@@ -12,19 +12,9 @@ dart_package("email_api") {
     "//apps/modules/common/packages/models",
     "//apps/modules/common/packages/util",
     "//apps/modules/email/packages/email_models",
+    "//lib/widgets/packages/logging:lib.logging",
     "//third_party/dart-pkg/pub/googleapis",
     "//third_party/dart-pkg/pub/googleapis_auth",
-  ]
-
-  analysis_options = "//apps/modules/common/.analysis_options"
-}
-
-dart_test("test") {
-  deps = [
-    "//apps/modules/email/packages/email_api",
-    "//apps/modules/email/packages/email_models",
-    "//lib/flutter/packages/flutter_test",
-    "//third_party/dart-pkg/pub/test",
   ]
 
   analysis_options = "//apps/modules/common/.analysis_options"

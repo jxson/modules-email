@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:application.lib.app.dart/app.dart';
 import 'package:application.services/service_provider.fidl.dart';
 import 'package:apps.modular.services.agent.agent_controller/agent_controller.fidl.dart';
+import 'package:apps.modular.services.component/message_queue.fidl.dart';
 import 'package:apps.modular.services.module/module_context.fidl.dart';
 import 'package:apps.modular.services.module/module_controller.fidl.dart';
 import 'package:apps.modular.services.module/module_state.fidl.dart';
@@ -40,6 +41,10 @@ class _DoneWatcher extends ModuleWatcher {
 
 /// The [ModuleModel] for the EmailStory.
 class EmailThreadListModuleModel extends ModuleModel {
+  final MessageQueueProxy _messageQueue = new MessageQueueProxy();
+  MessageReceiverImpl _messageQueueReceiver;
+  final Completer<String> _mqTokenCompleter = new Completer<String>();
+
   /// A proxy to the [EmailContentProvider] service impl.
   final cp.EmailContentProviderProxy emailContentProvider =
       new cp.EmailContentProviderProxy();
@@ -112,6 +117,24 @@ class EmailThreadListModuleModel extends ModuleModel {
       agentController.ctrl.request(),
     );
     connectToService(contentProviderServices, emailContentProvider.ctrl);
+
+    // Obtain a message queue.
+    componentContext.obtainMessageQueue(
+      'email-conent-updates',
+      _messageQueue.ctrl.request(),
+    );
+
+    // Save the message queue token for later use.
+    _messageQueue.getToken(_mqTokenCompleter.complete);
+    _messageQueueReceiver = new MessageReceiverImpl(
+      messageQueue: _messageQueue,
+      onReceiveMessage: _handleShouldUpdateEvent,
+    );
+
+    moduleContext.getStoryId((String storyId) async {
+      String token = await _mqTokenCompleter.future;
+      emailContentProvider.registerForUpdates(storyId, token);
+    });
   }
 
   @override
@@ -122,7 +145,8 @@ class EmailThreadListModuleModel extends ModuleModel {
     composerControllers
         .forEach((ModuleControllerProxy composer) => composer.ctrl.close());
     composerWatchers.forEach((ModuleWatcherBinding watcher) => watcher.close());
-
+    _messageQueueReceiver.close();
+    _messageQueue.ctrl.close();
     super.onStop();
   }
 
@@ -316,5 +340,19 @@ class EmailThreadListModuleModel extends ModuleModel {
     });
 
     return completer.future;
+  }
+
+  void _handleShouldUpdateEvent(String data, VoidCallback ack) {
+    ack();
+
+    Map<String, String> json = JSON.decode(data);
+    if (json['label-id'] != null && json['label-id'] == _doc.labelId) {
+      getThreads(_doc.labelId).then((Map<String, Thread> threads) {
+        // TODO(SO-614): Only update the changed thread/message instead of the
+        // whole [threads] map.
+        _threads = threads;
+        notifyListeners();
+      });
+    }
   }
 }
