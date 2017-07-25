@@ -105,12 +105,8 @@ class ModularResolverModel extends ResolverModel {
       margin: const EdgeInsets.only(top: 8.0),
       child: new CustomSingleChildLayout(
         delegate: new _PreviewLayoutDelegate(),
-        child: new Material(
-          color: Colors.grey[200],
-          type: MaterialType.card,
-          child: new Center(
-            child: new ChildView(connection: connection),
-          ),
+        child: new Center(
+          child: new ChildView(connection: connection),
         ),
       ),
     );
