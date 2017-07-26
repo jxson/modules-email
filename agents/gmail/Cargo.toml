@@ -1,0 +1,8 @@
+[package]
+name = "gmail"
+version = "0.1.0"
+license = "BSD-3-Clause"
+authors = ["Jason Campbell <jasoncampbell@google.com>"]
+description = "A better email/content_provider?"
+
+[dependencies]
