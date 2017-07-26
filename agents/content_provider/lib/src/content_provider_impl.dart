@@ -181,6 +181,10 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
       final gmail.GmailApi _gmail = await _gmailApi();
       gmail.ListDraftsResponse response =
           await _gmail.users.drafts.list('me', maxResults: max);
+
+      // Might be null if there are no messages labled "Drafts".
+      response.drafts ??= <gmail.Draft>[];
+
       Map<String, String> draftIds = <String, String>{};
       for (gmail.Draft d in response.drafts) {
         draftIds[d.message.id] = d.id;

@@ -86,6 +86,7 @@ class EmailThreadListScreen extends StatelessWidget {
           break;
         case 'DRAFT':
           icon = Icons.drafts;
+          text = 'Nothing in drafts';
           break;
         case 'SENT':
           icon = Icons.send;
@@ -95,6 +96,9 @@ class EmailThreadListScreen extends StatelessWidget {
           break;
         case 'SPAM':
           icon = Icons.error;
+          break;
+        case 'STARRED':
+          text = 'No starred messages';
           break;
         default:
           text = 'No messages labeled "${model.label.name}"';
