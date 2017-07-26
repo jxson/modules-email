@@ -158,7 +158,7 @@ class EmailContentProviderImpl extends ecp.EmailContentProvider {
               ..details = ''
               ..color = 0xFFFF0080
               ..iconUrls = <String>[
-                'https://www.gstatic.com/images/branding/product/1x/gmail_96dp.png'
+                'https://www.gstatic.com/images/branding/product/1x/inbox_96dp.png'
               ]
               ..imageType = SuggestionImageType.other
               ..imageUrl = ''

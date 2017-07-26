@@ -9,6 +9,7 @@ import 'package:email_models/models.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:googleapis/oauth2/v2.dart' as oauth;
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:lib.logging/logging.dart';
 import 'package:models/user.dart';
 import 'package:util/extract_uri.dart';
 
@@ -52,7 +53,14 @@ class EmailAPI {
   /// Get the logged in [User] object from [Oauth2Api].
   Future<User> me() async {
     oauth.Oauth2Api _oauth = new oauth.Oauth2Api(_client);
-    oauth.Userinfoplus info = await _oauth.userinfo.get();
+    oauth.Userinfoplus info;
+
+    try {
+      info = await _oauth.userinfo.get();
+    } catch (err) {
+      log.severe('failed to get userinfo', err);
+      throw err;
+    }
 
     return new User(
       id: info.id,
