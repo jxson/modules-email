@@ -259,10 +259,7 @@ class EmailThreadListModuleModel extends ModuleModel {
       },
     )));
 
-    threadController.defocus();
-    composerControllers
-        .forEach((ModuleControllerProxy composer) => composer.defocus());
-
+    composerController.focus();
     composerControllers.add(composerController);
     composerWatchers.add(watcherBinding);
   }
